@@ -10,7 +10,7 @@ import codecs
 import cerberus
 import schema
 
-osm_file = "sample.osm"
+osm_file = "san-diego_california.osm"
 nodes_csv = "nodes.csv"
 node_tag_csv = "nodes_tags.csv"
 ways_csv = "ways.csv"
