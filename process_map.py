@@ -2,6 +2,7 @@
 
 import xml.etree.cElementTree as ET
 from collections import defaultdict
+import cleaning
 import re
 import pprint
 import csv
@@ -9,7 +10,7 @@ import codecs
 import cerberus
 import schema
 
-osm_file = "san-diego_california.osm"
+osm_file = "sample.osm"
 nodes_csv = "nodes.csv"
 node_tag_csv = "nodes_tags.csv"
 ways_csv = "ways.csv"
@@ -27,52 +28,6 @@ node_tags_fields = ['id', 'key', 'value', 'type']
 way_fields = ['id', 'user', 'uid', 'version', 'changeset', 'timestamp']
 way_tags_fields = ['id', 'key', 'value', 'type']
 way_nodes_fields = ['id', 'node_id', 'position']
-
-street_type_re = re.compile(r'\b\S+\.?$', re.IGNORECASE)
-expected = ["Street", "Avenue", "Boulevard", "Drive", "Court", "Place", "Square", "Lane", "Road", "Trail", "Parkway", "Commons"]
-
-# The mapping was completed according to auditing the data
-mapping = { "St": "Street",
-            "St.": "Street",
-            "Ave": "Avenue",
-            "Rd.": "Road",
-            "Av": "Avenue",
-            "Ave.": "Avenue",
-            "Bl": "Boulevard",
-            "Blvd": "Boulevard",
-            "Blvd.": "Boulevard",
-            "Ct": "Court",
-            "Dr": "Drive",
-            "Dr.": "Drive",
-            "Pkwy": "Parkway",
-            "Pl": "Place",
-            "Wy": "Way"
-            }
-
-def is_street_name(elem):
-    return (elem.attrib['k'] == "addr:street")
-
-def update_street_name(name, mapping):
-    m = street_type_re.search(name)
-    if m.group() in mapping.keys():
-        name = re.sub(m.group(), mapping[m.group()], name)
-    return name
-
-def is_phone(elem):
-    if elem.attrib['k'] == "phone":
-        return True
-    elif (len(elem.attrib['k'].split(':', 1)) > 1 and elem.attrib['k'].split(':', 1)[1] == "phone"):
-        return True
-    else:
-        return False
-
-
-def update_phone(phone_num):
-        only_digit_num = filter(str.isdigit, phone_num)
-        if len(only_digit_num) > 10 and only_digit_num.startswith('1'):
-            return only_digit_num[1:]
-        else:
-            return only_digit_num
 
 def shape_element(element, node_attr_fields=node_fields, way_attr_fields=way_fields,
                   problem_chars=problemchars, default_tag_type='regular'):
@@ -96,10 +51,10 @@ def shape_element(element, node_attr_fields=node_fields, way_attr_fields=way_fie
             if not problemchars.search(tag.attrib['k']):
                 sec_tag = {}
                 sec_tag['id'] = element.attrib['id']
-                if is_phone(tag):
-                    sec_tag['value'] = update_phone(tag.attrib['v'])
-                elif is_street_name(tag):
-                    sec_tag['value'] = update_street_name(tag.attrib['v'], mapping)
+                if cleaning.is_phone(tag):
+                    sec_tag['value'] = cleaning.update_phone(tag.attrib['v'])
+                elif cleaning.is_street_name(tag):
+                    sec_tag['value'] = cleaning.update_street_name(tag.attrib['v'], cleaning.mapping)
                 else:
                     sec_tag['value'] = tag.attrib['v']
                 if lower_colon.search(tag.attrib['k']):
