@@ -1,64 +1,201 @@
-TITLE by YOUR_NAME_HERE
+Zillow Prize Competition EDA by Hadi Ramezani-Dakhel
 ========================================================
+# About the competition:
 
-> **Tip**: You will see quoted sections like this throughout the template to
-help you construct your report. Make sure that you remove these notes before
-you finish and submit your project!
+Zillow's Home Value Predition competition is a two-round competition in which the ultimate goal is to improve the home predition algotrithm of Zillow (aka Zestimate).
 
-> **Tip**: One of the requirements of this project is that your code follows
-good formatting techniques, including limiting your lines to 80 characters or
-less. If you're using RStudio, go into Preferences \> Code \> Display to set up
-a margin line to help you keep track of this guideline!
+During the first round of the competition, the objective is to predict the Zestimate's residual error, i.e. we need to predit where Zestimate fails and where it succeeds:
+
+$$logerror=log(Zestimate)-log(SalePrice)$$
+
+To make a successful predictive model our algorithm must be as good as Zillows' algorithm (not better and not worse). In the second stage, however, the objective is to actually improve the home value prediction algorithm.
+
+Here, we are provided with information on ~3M properties of three California counties including Los Angles, Orange, and Ventura (properties_2016.csv).Among these ~3M properties, we only have the residual error information of ~90K properties (train_2016_v2.csv). Therefore, our focus for this EDA would be on those properties.   
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
-# Load all of the packages that you end up using in your analysis in this code
-# chunk.
-
-# Notice that the parameter "echo" was set to FALSE for this code chunk. This
-# prevents the code from displaying in the knitted HTML output. You should set
-# echo=FALSE for all code chunks in your file, unless it makes sense for your
-# report to show the code that generated a particular plot.
-
 # The other parameters for "message" and "warning" should also be set to FALSE
 # for other code chunks once you have verified that each plot comes out as you
 # want it to. This will clean up the flow of your report.
 
 library(ggplot2)
+library(dplyr)
+library(gridExtra)
 ```
+
+Let's read in the data first.
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
+setwd("H:/udacity/data_analyst/p4_exploratory_data_analysis/ZillowPrize_EDA")
+properties_2016 = read.csv("properties_2016.csv")
+train_2016 = read.csv("train_2016_v2.csv")
+```
+
+## Renaming the features
+Philipp Spachtholz from kaggle ("https://www.kaggle.com/philippsp/exploratory-analysis-zillow/notebook") has proposed a much better naming for the features. I will use his names (with some updates of mine) to make the features more clear.
+
+```{r echo=FALSE, Rename}
+properties_2016 <- properties_2016 %>% rename(
+  id_parcel = parcelid,
+  build_year = yearbuilt,
+  area_basement = basementsqft,
+  area_patio = yardbuildingsqft17,
+  area_shed = yardbuildingsqft26, 
+  area_pool = poolsizesum,  
+  area_lot = lotsizesquarefeet, 
+  area_garage = garagetotalsqft,
+  area_firstfloor_finished = finishedfloor1squarefeet,
+  area_total_calc = calculatedfinishedsquarefeet,
+  area_base = finishedsquarefeet6,
+  area_live_finished = finishedsquarefeet12,
+  area_liveperi_finished = finishedsquarefeet13,
+  area_total_finished = finishedsquarefeet15,  
+  area_unknown = finishedsquarefeet50,
+  num_unit = unitcnt, 
+  num_story = numberofstories,  
+  num_room = roomcnt,
+  num_bathroom = bathroomcnt,
+  num_bedroom = bedroomcnt,
+  num_bathroom_calc = calculatedbathnbr,
+  num_bath = fullbathcnt,  
+  num_75_bath = threequarterbathnbr, 
+  num_fireplace = fireplacecnt,
+  num_pool = poolcnt,  
+  num_garage = garagecarcnt,  
+  region_county = regionidcounty,
+  region_city = regionidcity,
+  region_zip = regionidzip,
+  region_neighbor = regionidneighborhood,  
+  tax_total = taxvaluedollarcnt,
+  tax_building = structuretaxvaluedollarcnt,
+  tax_land = landtaxvaluedollarcnt,
+  tax_property = taxamount,
+  tax_year = assessmentyear,
+  tax_delinquency = taxdelinquencyflag,
+  tax_delinquency_year = taxdelinquencyyear,
+  zoning_property = propertyzoningdesc,
+  type_zoning_landuse = propertylandusetypeid,
+  zoning_landuse_county = propertycountylandusecode,
+  flag_fireplace = fireplaceflag, 
+  flag_tub = hashottuborspa,
+  type_quality = buildingqualitytypeid,
+  type_framing = buildingclasstypeid,
+  type_material = typeconstructiontypeid,
+  type_deck = decktypeid,
+  type_story = storytypeid,
+  type_heating = heatingorsystemtypeid,
+  type_aircon = airconditioningtypeid,
+  type_architectural= architecturalstyletypeid
+)
+train_2016 <- train_2016 %>% rename(
+  id_parcel = parcelid,
+  date = transactiondate
+)
+properties_2016 <- properties_2016 %>% 
+  mutate(tax_delinquency = ifelse(tax_delinquency=="Y",1,0),
+         flag_fireplace = ifelse(flag_fireplace=="Y",1,0),
+         flag_tub = ifelse(flag_tub=="Y",1,0))
+```
+Let's take a brief look at the datasets. The variables, their type, etc.
+
+```{r echo=FALSE, Summary_of_Data}
+str(properties_2016)
+str(train_2016)
+names(properties_2016)
+```
+
+The dataset "properties_2016" consists of 58 variables and 2,985,217 observations. The dataset "train_2016_v2.csv" contains 3 variables and 90275 observations. 
+
+Let's merge these two datasets, and create a single dataset that contains both the property information and the transaction information.
+
+```{r echo=FALSE, merge_datasets}
+zillow = merge(train_2016, properties_2016, by = "id_parcel")
+str(zillow)
+head(zillow)
 
 ```
 
-> **Tip**: Before you create any plots, it is a good idea to provide a short
-introduction into the dataset that you are planning to explore. Replace this
-quoted text with that general information!
+This now will be the main dataset that we'll be working with.
+
 
 # Univariate Plots Section
 
-> **Tip**: In this section, you should perform some preliminary exploration of
-your dataset. Run some summaries of the data and create univariate plots to
-understand the structure of the individual variables in your dataset. Don't
-forget to add a comment after each plot or closely-related group of plots!
-There should be multiple code chunks and text sections; the first one below is
-just to help you get started.
+Our objective is to predict the residual error. So, let's plot a histogram of logerror. I'll plot all histograms in terms of percentages to make a better sense out of them. I'll first do a summary to help me setup the graph.
 
-```{r echo=FALSE, Univariate_Plots}
-
+```{r echo=FALSE, Ditribution_of_logerror }
+summary(zillow$logerror)
+ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = zillow) +
+  geom_histogram(fill = 'blue', binwidth = 0.05) +
+  xlab("logerror") + ylab("%") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
 ```
 
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
+The x-axis here is the logerror. It actually shows the order of magnitude differences between the estimated values and the sale price. For instance, logerror= 1 indicates that Zestimate overestimated a property value by an order of magnitude, e.g. the sale price was \$100,000 but Zestimate predicted \$1000,000! Let's get a summary of logerror:
+
+```{r echo=FALSE, summary_logerror}
+summary(zillow$logerror)
+```
+
+Mean and medians are both positive. This indicates that Zestimate on average overestimates the house prices. 
+
+Let's split this over three different counties to see how the distribution looks like.
+
+```{r echo=FALSE, Ditrib_logerror_by_county }
+ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = zillow) +
+  geom_histogram(fill = 'blue', binwidth = 0.05) +
+  xlab("logerror") + ylab("%") +
+  coord_cartesian(x=c(-1, 1), y=c(0,25)) +
+  facet_wrap(~region_county)
+```
+
+While the distributions look similar, the code "3101" has longer tails. This could simply be because of higher number of transactions in that county.
+
+I would like to get a overall idea of the size and the age of the buildings.
+
+```{r echo=FALSE, size_hitogram}
+p1 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(area_total_calc))) +
+  geom_histogram(fill = "orange", binwidth = 100) +
+  xlab("total area") + ylab("%") +
+  coord_cartesian(x=c(500, 7500), y=c(0,8)) +
+  labs(title = "size linear scale")
+
+p2 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(area_total_calc))) +
+  geom_histogram(fill = "green", binwidth = 0.03) +
+  xlab("total") + ylab("%") +
+  coord_cartesian(x=c(500, 7500), y=c(0,8)) +
+  scale_x_log10() +
+  labs(title = "size log scale")
+grid.arrange(p1, p2, ncol = 2)
+```
+
+Let's get a summary of the data as well.
+
+```{r echo=FALSE, size_summary}
+summary(zillow$area_total_calc)
+```
+
+The average size 1773 sqft and the max size is 2273 sqft. These values make sense. However, min size is 2! This does not make sense. We should be careful with this when we try to fit a model to the data. 
+
+```{r echo=FALSE, age_hitogram}
+zillow$age_year = 2017 - zillow$build_year
+
+ggplot(aes(x = age_year, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(build_year))) +
+  geom_histogram(fill = "lightcoral", binwidth = 5) +
+  xlab("age") + ylab("%") +
+  coord_cartesian(x=c(0, 120), y=c(0,10)) +
+  labs(title = "age") + 
+```
+
+Let's also get a summary of data.
+
+```{r echo=FALSE, age_summary}
+summary(zillow$age_year)
+```
+
+The mean age of the building is ~48 years. The mean and medians are very close here.
 
 # Univariate Analysis
-
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 
