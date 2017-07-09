@@ -184,7 +184,7 @@ ggplot(aes(x = age_year, y = ..count../sum(..count..)*100), data = subset(zillow
   geom_histogram(fill = "lightcoral", binwidth = 5) +
   xlab("age") + ylab("%") +
   coord_cartesian(x=c(0, 120), y=c(0,10)) +
-  labs(title = "age") + 
+  labs(title = "age") 
 ```
 
 Let's also get a summary of data.
