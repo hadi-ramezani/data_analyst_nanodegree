@@ -219,6 +219,8 @@ yourself to relationships between a main output feature and one of the
 supporting variables. Try to look at relationships between supporting variables
 as well.
 
+I would like to look at the correlation between different features. There are now 61 features in the dataset! We either have to select important features by intuition or find another criterion! 
+
 ```{r echo=FALSE, Bivariate_Plots}
 
 ```
