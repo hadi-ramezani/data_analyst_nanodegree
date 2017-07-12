@@ -21,6 +21,8 @@ Here, we are provided with information on ~3M properties of three California cou
 library(ggplot2)
 library(dplyr)
 library(gridExtra)
+library(stringr)
+library(GGally)
 ```
 
 Let's read in the data first.
@@ -28,15 +30,15 @@ Let's read in the data first.
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 setwd("H:/udacity/data_analyst/p4_exploratory_data_analysis/ZillowPrize_EDA")
-properties_2016 = read.csv("properties_2016.csv")
-train_2016 = read.csv("train_2016_v2.csv")
+properties_2016 = read.csv("renamed_properties_2016.csv")
+train_2016 = read.csv("renamed_train_2016.csv")
 ```
 
 ## Renaming the features
-Philipp Spachtholz from kaggle ("https://www.kaggle.com/philippsp/exploratory-analysis-zillow/notebook") has proposed a much better naming for the features. I will use his names (with some updates of mine) to make the features more clear.
+Philipp Spachtholz from kaggle ("https://www.kaggle.com/philippsp/exploratory-analysis-zillow/notebook") has proposed a much better naming for the features. I will use his names (with some updates of mine) to make the feature names self-explanatory.
 
-```{r echo=FALSE, Rename}
-properties_2016 <- properties_2016 %>% rename(
+#```{r echo=FALSE, Rename}
+properties_2016 = properties_2016 %>% rename(
   id_parcel = parcelid,
   build_year = yearbuilt,
   area_basement = basementsqft,
@@ -88,15 +90,24 @@ properties_2016 <- properties_2016 %>% rename(
   type_aircon = airconditioningtypeid,
   type_architectural= architecturalstyletypeid
 )
-train_2016 <- train_2016 %>% rename(
+rename(train_2016)
+train_2016 = train_2016 %>% rename(
   id_parcel = parcelid,
   date = transactiondate
 )
-properties_2016 <- properties_2016 %>% 
+properties_2016 = properties_2016 %>% 
   mutate(tax_delinquency = ifelse(tax_delinquency=="Y",1,0),
          flag_fireplace = ifelse(flag_fireplace=="Y",1,0),
          flag_tub = ifelse(flag_tub=="Y",1,0))
-```
+#```
+
+Now, let's write the data into new files.
+
+#```{r write_newfiles}
+write.csv(properties_2016, "renamed_properties_2016.csv")
+write.csv(train_2016, "renamed_train_2016.csv")
+#```
+
 Let's take a brief look at the datasets. The variables, their type, etc.
 
 ```{r echo=FALSE, Summary_of_Data}
@@ -142,11 +153,29 @@ Mean and medians are both positive. This indicates that Zestimate on average ove
 Let's split this over three different counties to see how the distribution looks like.
 
 ```{r echo=FALSE, Ditrib_logerror_by_county }
-ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = zillow) +
+
+names(table(zillow$region_county))
+
+p1 = ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = subset(zillow, region_county == 1286)) +
   geom_histogram(fill = 'blue', binwidth = 0.05) +
   xlab("logerror") + ylab("%") +
-  coord_cartesian(x=c(-1, 1), y=c(0,25)) +
-  facet_wrap(~region_county)
+  labs(title = "1286") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
+
+p2 = ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = subset(zillow, region_county == 2061)) +
+  geom_histogram(fill = 'black', binwidth = 0.05) +
+  xlab("logerror") + ylab("%") +
+  labs(title = "2061") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
+
+p3 = ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = subset(zillow, region_county == 3101)) +
+  geom_histogram(fill = 'red', binwidth = 0.05) +
+  xlab("logerror") + ylab("%") +
+  labs(title = "3101") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
+
+grid.arrange(p1, p2, p3, ncol = 3)
+
 ```
 
 While the distributions look similar, the code "3101" has longer tails. This could simply be because of higher number of transactions in that county.
@@ -169,6 +198,8 @@ p2 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = s
 grid.arrange(p1, p2, ncol = 2)
 ```
 
+By scaling the x axis to log10, the histogram looks like a normal distribution. 
+
 Let's get a summary of the data as well.
 
 ```{r echo=FALSE, size_summary}
@@ -176,6 +207,8 @@ summary(zillow$area_total_calc)
 ```
 
 The average size 1773 sqft and the max size is 2273 sqft. These values make sense. However, min size is 2! This does not make sense. We should be careful with this when we try to fit a model to the data. 
+
+Next, I'll create a new feature called "age". This feature contains the age of each building. I'll then plot a histogram of age.
 
 ```{r echo=FALSE, age_hitogram}
 zillow$age_year = 2017 - zillow$build_year
@@ -187,7 +220,8 @@ ggplot(aes(x = age_year, y = ..count../sum(..count..)*100), data = subset(zillow
   labs(title = "age") 
 ```
 
-Let's also get a summary of data.
+
+We don't have too many new buidings in the dataset. Let's also get a summary of the data.
 
 ```{r echo=FALSE, age_summary}
 summary(zillow$age_year)
@@ -199,30 +233,50 @@ The mean age of the building is ~48 years. The mean and medians are very close h
 
 ### What is the structure of your dataset?
 
+The main dataset contains transactions/logerror data for 90275 properties with 58 features. The features include information such as size, tax, number of rooms, built year as well as x,y coordinates and zone information.  
+
 ### What is/are the main feature(s) of interest in your dataset?
+
+The feature of interest is the logerror which shows the order of magnitude deviation of the predicted price from the sale price.   
 
 ### What other features in the dataset do you think will help support your \
 investigation into your feature(s) of interest?
 
+I think the coordinate of each property (x and y) are important features which could be related to the magnitude of logerror. I plan to perform more investigations on these features.
+
 ### Did you create any new variables from existing variables in the dataset?
+
+I created a new feature called "age" to better show if a property is newly built or not. The existing feature "year_built" contains this information but I think it's quite easier to comprehend the age than the year_built.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
 
+The distribution of the graphs (logerror, size, age) were not unexpected. The distribution of the size histogram was right skewed. I log-transformed that distribution and the transformed graph looked like a normal distribution. 
+
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
+I would like to look at the correlation between different features. There are now 61 features in the dataset! We either have to select important features by intuition or find another criterion! Let's do both; first, I'll drop features with more than 50% of missing values.
 
-I would like to look at the correlation between different features. There are now 61 features in the dataset! We either have to select important features by intuition or find another criterion! 
+```{r echo=FALSE, drop_features}
+zillow_selected = zillow[, -which(colMeans(is.na(zillow)) > 0.5)]
+str(zillow_selected)
+```
 
-```{r echo=FALSE, Bivariate_Plots}
+This leaves us with 35 features. We can now select some features and make correlation plots.
+First, let's create the correlain graphs for logerror, num_bedroom, num_bathroom, num_room, and num_units. 
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_numbers}
+num_features = zillow_selected[, c("logerror", "num_bedroom", "num_bathroom_calc", "num_room", "num_unit")]
+ggpairs(num_features)
+```
+
+Now, let's 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_areas_year}
+area_year_features = zillow_selected[, c("logerror", "area_total_calc", "area_live_finished", "area_lot", "age_year")]
+ggpairs(area_year_features)
 ```
 
 # Bivariate Analysis
