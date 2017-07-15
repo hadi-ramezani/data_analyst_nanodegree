@@ -237,16 +237,16 @@ The main dataset contains transactions/logerror data for 90275 properties with 5
 
 ### What is/are the main feature(s) of interest in your dataset?
 
-The feature of interest is the logerror which shows the order of magnitude deviation of the predicted price from the sale price.   
+The main feature of interest is the logerror which shows the order of magnitude deviation of the predicted price from the sale price.   
 
 ### What other features in the dataset do you think will help support your \
 investigation into your feature(s) of interest?
 
-I think the coordinate of each property (x and y) are important features which could be related to the magnitude of logerror. I plan to perform more investigations on these features.
+I think the coordinate of each property (x and y) and the properties density in a region (this is not included in the dataset) are important features which could be related to the magnitude of logerror. I plan to perform some EDA on the properties coordinates and their correlation with logerro these features. Calculating the feature "density" is quite challanigng and suitable for model building later on.
 
 ### Did you create any new variables from existing variables in the dataset?
 
-I created a new feature called "age" to better show if a property is newly built or not. The existing feature "year_built" contains this information but I think it's quite easier to comprehend the age than the year_built.
+I created a new feature called "age" (the age of each properties expressed in number of years) to better show if a property is newly built or not. The existing feature "year_built" contains this information but I think it's quite easier to comprehend the age rahter than the year_built.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
@@ -265,6 +265,7 @@ str(zillow_selected)
 ```
 
 This leaves us with 35 features. We can now select some features and make correlation plots.
+
 First, let's create the correlain graphs for logerror, num_bedroom, num_bathroom, num_room, and num_units. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_numbers}
@@ -272,17 +273,63 @@ num_features = zillow_selected[, c("logerror", "num_bedroom", "num_bathroom_calc
 ggpairs(num_features)
 ```
 
-Now, let's 
+We see that there is a strong correlation between the number of bathrooms and the number of bedroom in a properties which makes sense. 
+The correlation between the logerror and the number of bedroom shows the distribution of the logerror is pretty wide for the properties with 3-5 bedrooms.
+
+Now, let's look at the correlation between the features related to the size and also the age of the buidings.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_areas_year}
 area_year_features = zillow_selected[, c("logerror", "area_total_calc", "area_live_finished", "area_lot", "age_year")]
 ggpairs(area_year_features)
 ```
 
-# Bivariate Analysis
+There is a perfect correlation between the "area_total_calc" and "area_live_finished" with correlation coefficient of 1. These two features should be combined together to create a single feature when making a predictive model.
 
-> **Tip**: As before, summarize what you found in your bivariate explorations
-here. Use the questions below to guide your discussion.
+The correlation plots between the "logerror" and "area_total_calc", "area_live_finished", and "area_lot" shows the logerror is smaller for larger properties. Again, we should keep in mind that the logerror tells us about the order of magnitude of error. 
+
+
+Finally, let's make a correlation plots for the tax related features.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_areas_year}
+tax_features = zillow_selected[, c("logerror", "tax_building", "tax_land", "tax_total")]
+ggpairs(tax_features)
+```
+
+We see that there is not a strong correlation between the tax features and the logerror. However, there is a strong correlation between the tax properties themselevs which is not surprising.
+
+Let's explore the month in which the transations occured and the correlation with logerror. To do this, I will created a new feature "trans_month" that contains the months informatin (1, 2, 3, etc). The reasoning behind this comes from the fact that "season change" drives the real estate market. I want to see whether Zestimate takes this into account or not, i.e. is there a strong correlation between the transation month and the logerror?
+
+```{r echo=FALSE, trans_month}
+zillow$trans_month = format(as.Date(zillow$date), "%m")
+
+ggplot(aes(x = trans_month, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(trans_month))) +
+  geom_bar(fill = "brown") +
+  xlab("trans_month") + ylab("%") +
+  #coord_cartesian(x=c(0, 120), y=c(0,10)) +
+  labs(title = "transaction month") 
+```
+
+This histogram only tells us about the transaction data avaiable to us. It contains no information about the total number of transations in each month.
+
+Now, let's plot the avergae logerror vs transaction month.
+
+```{r Conditional Summaries}
+trans_month_groups = group_by(zillow, trans_month)
+zillow.logerror_by_month = summarise(trans_month_groups,
+          logerror_mean = mean(logerror),
+          logerror_median = median(logerror),
+          n = n())
+
+ggplot(data = zillow.logerror_by_month, aes(x = trans_month, y = logerror_mean)) +
+  geom_point(color = "blue", size = 3.5) + geom_line(color = "blue", size = 1.5, group = 1)
+
+```
+
+
+Very interesting results. The average error decreases as we enter the spring (March, April, etc) and it rises once the summer is finished (September, October, etc). This could very much be a general trend.
+
+
+# Bivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
