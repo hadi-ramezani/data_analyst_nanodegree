@@ -9,7 +9,7 @@ Zillow Prize Competition EDA by Hadi Ramezani-Dakhel
 
 Zillow's Home Value Predition competition is a two-round competition in which the ultimate goal is to improve the home predition algotrithm of Zillow (aka Zestimate).
 
-During the first round of the competition, the objective is to predict the Zestimate's residual error, i.e. we need to predit where Zestimate fails and where it succeeds:
+During the first round of the competition, the objective is to predict the Zestimate's residual error, i.e. we need to predict where Zestimate fails and where it succeeds:
 
 $$logerror=log(Zestimate)-log(SalePrice)$$
 
@@ -114,7 +114,7 @@ write.csv(properties_2016, "renamed_properties_2016.csv")
 write.csv(train_2016, "renamed_train_2016.csv")
 #```
 
-Let's take a brief look at the datasets. The variables, their type, etc.
+Let's take a brief look at the data sets. The variables, their type, etc.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Summary_of_Data}
 str(properties_2016)
@@ -122,9 +122,9 @@ str(train_2016)
 names(properties_2016)
 ```
 
-The dataset "properties_2016" consists of 58 variables and 2,985,217 observations. The dataset "train_2016_v2.csv" contains 3 variables and 90275 observations. 
+The data set "properties_2016" consists of 58 variables and 2,985,217 observations. The data set "train_2016_v2.csv" contains 3 variables and 90275 observations. 
 
-Let's merge these two datasets, and create a single dataset that contains both the property information and the transaction information.
+Let's merge these two data sets, and create a single data set that contains both the property information and the transaction information.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, merge_datasets}
 zillow = merge(train_2016, properties_2016, by = "id_parcel")
@@ -133,7 +133,7 @@ head(zillow)
 
 ```
 
-This now will be the main dataset that we'll be working with.
+This now will be the main data set that we'll be working with.
 
 
 # Univariate Plots Section
@@ -189,19 +189,19 @@ While the distributions look similar, the code "3101" has longer tails. This cou
 I would like to get a overall idea of the size and the age of the buildings.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, size_hitogram}
-p1 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(area_total_calc))) +
+s1 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(area_total_calc))) +
   geom_histogram(fill = "orange", binwidth = 100) +
   xlab("total area") + ylab("%") +
   coord_cartesian(x=c(500, 7500), y=c(0,8)) +
   labs(title = "size linear scale")
 
-p2 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(area_total_calc))) +
+s2 = ggplot(aes(x = area_total_calc, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(area_total_calc))) +
   geom_histogram(fill = "green", binwidth = 0.03) +
-  xlab("total") + ylab("%") +
+  xlab("total area") + ylab("%") +
   coord_cartesian(x=c(500, 7500), y=c(0,8)) +
   scale_x_log10() +
   labs(title = "size log scale")
-grid.arrange(p1, p2, ncol = 2)
+grid.arrange(s1, s2, ncol = 2)
 ```
 
 By scaling the x axis to log10, the histogram looks like a normal distribution. 
@@ -213,6 +213,28 @@ summary(zillow$area_total_calc)
 ```
 
 The average size 1773 sqft and the max size is 2273 sqft. These values make sense. However, min size is 2! This does not make sense. We should be careful with this when we try to fit a model to the data. 
+
+Let's make a similar plot with the tax_total (this is the assessed value of the properties for tax purposes). I would predict to observe a similar behavior.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, tax_hitogram}
+t1 = ggplot(aes(x = tax_total, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(tax_total))) +
+  geom_histogram(fill = "cyan", binwidth = 15000) +
+  xlab("total tax") + ylab("%") +
+  coord_cartesian(x=c(1e4, 1e7), y=c(0,3)) +
+  labs(title = "tax linear scale")
+
+t2 = ggplot(aes(x = tax_total, y = ..count../sum(..count..)*100), data = subset(zillow, !is.na(tax_total))) +
+  geom_histogram(fill = "olivedrab", binwidth = 0.02) +
+  xlab("total tax") + ylab("%") +
+  coord_cartesian(x=c(1e4, 1e7), y=c(0,3)) +
+  scale_x_log10() +
+  labs(title = "tax log scale")
+grid.arrange(t1, t2, ncol = 2)
+```
+
+
+The graphs meet my expectations. However, I see a shoulder in log10 transformed histogram of total_tax which is quite interesting. 
+
 
 Next, I'll create a new feature called "age". This feature contains the age of each building. I'll then plot a histogram of age.
 
@@ -227,7 +249,7 @@ ggplot(aes(x = age_year, y = ..count../sum(..count..)*100), data = subset(zillow
 ```
 
 
-We don't have too many new buidings in the dataset. Let's also get a summary of the data.
+We don't have too many new buildings in the data set. Let's also get a summary of the data.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, age_summary}
 summary(zillow$age_year)
@@ -239,7 +261,7 @@ The mean age of the building is ~48 years. The mean and medians are very close h
 
 ### What is the structure of your dataset?
 
-The main dataset contains transactions/logerror data for 90275 properties with 58 features. The features include information such as size, tax, number of rooms, built year as well as x,y coordinates and zone information.  
+The main data set contains transactions/logerror data for 90275 properties with 58 features. The features include information such as size, tax, number of rooms, built year as well as x,y coordinates and zone information.  
 
 ### What is/are the main feature(s) of interest in your dataset?
 
@@ -248,11 +270,11 @@ The main feature of interest is the logerror which shows the order of magnitude 
 ### What other features in the dataset do you think will help support your \
 investigation into your feature(s) of interest?
 
-I think the coordinate of each property (x and y) and the properties density in a region (this is not included in the dataset) are important features which could be related to the magnitude of logerror. I plan to perform some EDA on the properties coordinates and their correlation with logerro these features. Calculating the feature "density" is quite challanigng and suitable for model building later on.
+I think the coordinate of each property (x and y) and the properties density in a region (this is not included in the dataset) are important features which could be related to the magnitude of logerror. I plan to perform some EDA on the properties coordinates and their correlation with logerro these features. Calculating the feature "density" is quite challenging and suitable for model building later on.
 
 ### Did you create any new variables from existing variables in the dataset?
 
-I created a new feature called "age" (the age of each properties expressed in number of years) to better show if a property is newly built or not. The existing feature "year_built" contains this information but I think it's quite easier to comprehend the age rahter than the year_built.
+I created a new feature called "age" (the age of each properties expressed in number of years) to better show if a property is newly built or not. The existing feature "year_built" contains this information but I think it's quite easier to comprehend the age rather than the year_built.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
@@ -272,7 +294,7 @@ str(zillow_selected)
 
 This leaves us with 35 features. We can now select some features and make correlation plots.
 
-First, let's create the correlain graphs for logerror, num_bedroom, num_bathroom, num_room, and num_units. 
+First, let's create the correlation graphs for logerror, num_bedroom, num_bathroom, num_room, and num_units. 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_numbers}
 num_features = zillow_selected[, c("logerror", "num_bedroom", "num_bathroom_calc", "num_room", "num_unit")]
@@ -282,7 +304,7 @@ ggpairs(num_features)
 We see that there is a strong correlation between the number of bathrooms and the number of bedroom in a properties which makes sense. 
 The correlation between the logerror and the number of bedroom shows the distribution of the logerror is pretty wide for the properties with 3-5 bedrooms.
 
-Now, let's look at the correlation between the features related to the size and also the age of the buidings.
+Now, let's look at the correlation between the features related to the size and also the age of the buildings.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, correlation_for_areas_year}
 area_year_features = zillow_selected[, c("logerror", "area_total_calc", "area_live_finished", "area_lot", "age_year")]
@@ -301,9 +323,9 @@ tax_features = zillow_selected[, c("logerror", "tax_building", "tax_land", "tax_
 ggpairs(tax_features)
 ```
 
-We see that there is not a strong correlation between the tax features and the logerror. However, there is a strong correlation between the tax properties themselevs which is not surprising.
+We see that there is not a strong correlation between the tax features and the logerror. However, there is a strong correlation between the tax properties themselves which is not surprising.
 
-Let's explore the month in which the transations occured and the correlation with logerror. To do this, I will created a new feature "trans_month" that contains the months informatin (1, 2, 3, etc). The reasoning behind this comes from the fact that "season change" drives the real estate market. I want to see whether Zestimate takes this into account or not, i.e. is there a strong correlation between the transation month and the logerror?
+Let's explore the month in which the transactions occurred and the correlation with logerror. To do this, I will created a new feature "trans_month" that contains the months information (1, 2, 3, etc). The reasoning behind this comes from the fact that "season change" drives the real estate market. I want to see whether Zestimate takes this into account or not, i.e. is there a strong correlation between the transaction month and the logerror?
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, trans_month}
 zillow$trans_month = format(as.Date(zillow$date), "%m")
@@ -315,9 +337,9 @@ ggplot(aes(x = trans_month, y = ..count../sum(..count..)*100), data = subset(zil
   labs(title = "transaction month") 
 ```
 
-This histogram only tells us about the transaction data avaiable to us. It contains no information about the total number of transations in each month.
+This histogram only tells us about the transaction data available to us. It contains no information about the total number of transactions in each month.
 
-Now, let's plot the avergae logerror vs transaction month.
+Now, let's plot the average logerror vs transaction month.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Conditional Summaries}
 trans_month_groups = group_by(zillow, trans_month)
@@ -353,14 +375,14 @@ There is a perfect linear relationship between "area_total_calc" and "area_live_
 
 ### What was the strongest relationship you found?
 
-While there hasn't been a very strong correlation between diffeent features and logerror, I found that the logerror is systematically influenced by seasons/months. The logerror is generally lower in spring and summer. 
+While there hasn't been a very strong correlation between different features and logerror, I found that the logerror is systematically influenced by seasons/months. The logerror is generally lower in spring and summer. 
 The overall weak correlation between various features investigated in this section and my feature of interest (logerror), encouraged made me to look into other features (coordinates, etc) in multivariate plot section. It is very important to look at x, y, and logerror in a single plot (rather than in multiple bivariate plots). As such, this task will be completed in the next section.   
 
 # Multivariate Plots Section
 
 First, I would like to create a map and show x and y coordinates of each property using a circle. I also would like to color each circle based on the value of logerror. Here, I'll show a fraction of the data (30%). I'll select them randomly. 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE,Multivariate_Plots}
+```{r echo=FALSE, message=FALSE, warning=FALSE, map_plot}
 zillow.coor_error = zillow %>% 
   transform(longitude = longitude/1e6, latitude = latitude/1e6) %>%
   select(id_parcel, logerror,longitude, latitude) %>% 
@@ -380,7 +402,7 @@ leaflet(zillow.coor_error) %>% addTiles() %>%
 
 ```
 
-The yellow color dominates here which indicates, the logerror mainly is very small. However, we can easily spot several blue (overestimated prices) and red (under-estimated prices) on the map. If we zoom in by a factor of 5-6 we'll see quite an interesting behavior. The properties with large values of logerror are commonly more isolated. There are two potential theories on how the predictions are poor for those properties: 1) These properties are unique. For example, they are located in a unique location (good or bad) which can potentially attract or repel buyers. The Zestimate prediction probably doesn't take those factor into the considerations 2) Zestimate takes advantage of the sale prices for other properties in close proximity of a property of interest. Accordingly, Zestimate fails to make an accurate predition when there isn't enough nearby data.   
+The yellow color dominates here which indicates, the logerror mainly is very small. However, we can easily spot several blue (overestimated prices) and red (under-estimated prices) on the map. If we zoom in by a factor of 5-6 we'll see quite an interesting behavior. The properties with large values of logerror are commonly more isolated. There are two potential theories on how the predictions are poor for those properties: 1) These properties are unique. For example, they are located in a unique location (good or bad) which can potentially attract or repel buyers. The Zestimate prediction probably doesn't take those factor into the considerations 2) Zestimate takes advantage of the sale prices for other properties in close proximity of a property of interest. Accordingly, Zestimate fails to make an accurate prediction when there isn't enough nearby data.   
 
 In the bivariate section, we saw that the logerror appears to be smaller for larger properties. This was true for both features related to the area (total area, area_live_finished) and tax related features. Let's make a scatter plot of one feature from these two categories and color them based on the logerror values.
 
@@ -390,13 +412,15 @@ p = ggplot(aes(x = tax_total, y = area_total_calc, color = logerror),
        data = subset(zillow_selected, !is.na(tax_total) & !is.na(area_total_calc) & abs(logerror) < 0.5)) + 
   geom_point(alpha = 0.5, size = 2, aes(colours = logerror)) +
   scale_colour_gradient2() +
-  scale_x_continuous(limits = c(0, 1e7)) +
-  scale_y_continuous(limits = c(0, 10000))
+  #scale_x_continuous(limits = c(1e4, 1e7)) +
+  #scale_y_continuous(limits = c(100, 10000)) +
+  scale_x_log10(limits = c(1e4, 2e7)) +
+  scale_y_log10(limits = c(100, 10000))
 p
 ```
 
 
-This plots shows we don't have many extreme logerror for superlarge and superexpensive properties. It also shows we have much less data points there. Therefore, I think "size/assessed tax value" do not heavily influence the logerror (this is also confirmed using the correlatin plots). Let's split this by region_county to see if anything changes.
+This plots shows we don't have many extreme logerror for superlarge and super-expensive properties. It also shows we have much less data points there. Therefore, I think "size/assessed tax value" do not heavily influence the logerror (this is also confirmed using the correlation plots). Let's split this by region_county to see if anything changes.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, tax_area_logerror_by_county}
 p + facet_wrap(~region_county)
@@ -416,11 +440,11 @@ I don't see any distinct patterns in these plots.
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
 
-The x,y coordinates appear to be quite important in predicting the feature of interest here. It appears very difficult to corretcly predict the logerror with high accuracy without an extensive feature creation/manipulation. 
+The x,y coordinates appear to be quite important in predicting the feature of interest here. It appears very difficult to correctly predict the logerror with high accuracy without an extensive feature creation/manipulation. 
 
 ### Were there any interesting or surprising interactions between features?
 
-The map plot showed some interesting interactions with the logerror. It appears that to make a good predition of the logerror we must create some new features that takes the sale price of the nearest properties into account. This is supported by observing large logerror for isolated properties.  
+The map plot showed some interesting interactions with the logerror. It seems that to make we must create some new features that takes the sale price of the nearest properties into account in order to make a good predictive model of logerror . This is supported by observation of large logerror for isolated properties, i.e. the properties with fewer number of neighbors.  
 
 ------
 
@@ -435,27 +459,49 @@ units), and good aesthetic choices (e.g. color, transparency). After each plot,
 make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One
-```{r echo=FALSE, Plot_One}
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
+p1 = ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = subset(zillow, region_county == 1286)) +
+  geom_histogram(fill = 'blue', binwidth = 0.05) +
+  xlab("logerror") + ylab("percentage of properties") +
+  labs(title = "County 1286") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
 
+p2 = ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = subset(zillow, region_county == 2061)) +
+  geom_histogram(fill = 'black', binwidth = 0.05) +
+  xlab("logerror") + ylab("percentage of properties") +
+  labs(title = "County 2061") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
+
+p3 = ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), data = subset(zillow, region_county == 3101)) +
+  geom_histogram(fill = 'red', binwidth = 0.05) +
+  xlab("logerror") + ylab("percentage of properties") +
+  labs(title = "County 3101") +
+  coord_cartesian(x=c(-1, 1), y=c(0,45))
+
+grid.arrange(p1, p2, p3, ncol = 3)
 ```
 
 ### Description One
-
+The distribution of logerror in three different counties appears to be normal. We see a higher number of outliers in county 3101 (longer tails). In general, Zestimates has comparable performance in these three counties of California.  
 
 ### Plot Two
-```{r echo=FALSE, Plot_Two}
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Two}
+ggplot(data = zillow.logerror_by_month, aes(x = trans_month, y = logerror_mean)) +
+  geom_point(color = "darkgreen", size = 4)+
+  geom_errorbar(color = "darkgreen", size = 1.5, aes(ymin=logerror_mean-2*logerror_se, ymax=logerror_mean+2*logerror_se)) +
+  geom_line(color = "darkgreen", size = 1.5, group = 1) + 
+  xlab("transaction month") + ylab("mean of logerror")
 ```
 
 ### Description Two
 
+I find this to be one of the most important plots in this analysis. The plot shows that Zestimate, on average, has the lowest logerrors in spring and summer. I believe the Zestimates' algorithms likely takes the season change into account. However, it's either difficult to predict the market in the fall and winter or their algorithms needs some improvements. 
 
-### Plot Three
-```{r echo=FALSE, Plot_Three}
-
-```
+### Plot Three: The Map Plot
 
 ### Description Three
+
+I did not copy that plot here because it significantly slows down the script. I think this graphs contains a lot of information about the data. One can spend hours and hours on this graph and think about possible theories to explain the logerror. I found that Zestimate commonly fails to accurately predict the price of the properties in less dense areas. Accordingly, I hypothesize the Zestimates relies on available sale data to make predictions.
 
 ------
 
@@ -465,3 +511,10 @@ make sure you justify why you chose each plot by describing what it shows.
 the insights you found. What were some of the struggles that you went through?
 What went well? What was surprising? Make sure you include an insight into
 future work that could be done with the dataset.
+
+The training data set contains information on ~90,000 properties in three different countries of California. We are provided with 58 different features including the size related information (size of the properties, number of bedrooms, number of bathrooms, etc) as well as tax, and location properties. The ultimate goal is to predict the deviation of the Zillow's model called Zestimate with the actual sale price. I first started my EDA by plotting some basic histograms to get a feel for data. I looked at the histograms of logerror, size, and tax properties and performed some transformation of the data. Then, I made some correlation plots to explore the relationships between important features. I indeed found reasonable correlations between a number of features. However, there was not a strong correlation between different features and my feature of interest logerror. Next, I plotted a conditional summary (mean of logerror for each months), and I found an interesting correlations which showed the logerror is higher is Fall and Winter. I also plotted the x and y coordinates of each property on a map using the leaflet library which also revealed some interesting information. 
+One of the difficult task was splitting the histogram of logerror in terms of percentages for different counties. The first solution that came to my mind was using the facet_wrap in ggplot. However, I wanted to calculate the percentage of logerror of each county separately. To accomplish this, I subset the data for each county. 
+My future plan is to make a predictive model and participate in the Kaggle competition. The analysis that I performed here and the insights from the data are crucial for making a good model.
+
+#References
+The kaggle wesite, stackoverflow, r-bloggers, and other documentations were used in this EDA.
