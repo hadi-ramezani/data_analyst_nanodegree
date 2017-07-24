@@ -72,7 +72,83 @@ summary(zillow$logerror)
 
 Mean and medians are both positive. This indicates that Zestimate on average tends to overestimate the house prices. The box_plot on the right also shows that we have some outliers that we should be very careful about.
 
-Let's split this over three different counties to see how the distribution looks like.
+Lest's facet only the outliers (abs(logerror) > 0.5) over different months to see how the distribution of outliers has changed over time. To do this, I will create a new feature "trans_month" that contains the months information (1, 2, 3, etc). The reasoning behind this comes from the fact that "season change" drives the real estate market. I want to see whether Zestimate takes this into account or not, i.e. is there a strong correlation between the transaction month and the logerror?
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, trans_month}
+zillow$trans_month = format(as.Date(zillow$date), "%m")
+
+ggplot(aes(x = trans_month, y = ..count../sum(..count..)*100), 
+       data = subset(zillow, !is.na(trans_month))) +
+  geom_bar(fill = "brown") +
+  xlab("trans_month") + ylab("%") +
+  labs(title = "transaction month") 
+```
+
+This histogram only tells us about the transaction data available to us. It contains no information about the total number of transactions in each month.
+
+Now, let's do the faceting.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Ditrib_logerror_by_month }
+ggplot(aes(logerror), data = subset(zillow, abs(logerror) > 0.5)) +
+  geom_histogram(fill = 'blue', binwidth = 0.05) +
+  xlab("logerror") + ylab("count") +
+  coord_cartesian(x=c(-5, 5), y=c(0,10)) +
+  facet_wrap(~trans_month)
+```
+
+Let's now count the number of outliers for each month and plot it.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, num_outliers_by_month }
+outliers_groups = group_by(subset(zillow, abs(logerror) > 0.5 ), trans_month)
+zillow.outliers_by_month = summarise(outliers_groups,
+          n = n())
+ggplot(aes(x = trans_month, y = n), data = zillow.outliers_by_month) +
+  geom_point(color = "navy", size = 4)+
+  geom_line(color = "navy", size = 1.5, group = 1)
+```
+
+Apparently, the number of outliers are lower in October, November, and December.
+
+Now, let's plot the distribution of logerror with different values of cutoff for outliers:
+
+**cutoff = 0.5**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Ditribution_of_logerror_9_3 }
+
+plot_distribution <- function(outlier_cutoff)
+{
+  zillow.wo_outlier = subset(zillow, abs(logerror) < outlier_cutoff)
+
+  ggplot(aes(logerror), data = 
+          subset(zillow.wo_outlier, trans_month %in% c('01', '02', '03', '04', '06', '07', '08', '09'))) +
+    geom_density(aes(logerror, color = "first 9"), size = 1.5) +
+    geom_density(aes(logerror, color = "last 3"), data = 
+          subset(zillow.wo_outlier, trans_month %in% c('10', '11', '12')), size = 1.5) +
+    coord_cartesian(x=c(-0.5, 0.5)) +
+    scale_colour_manual(name="Colors", values = c("1", "2"))
+}
+plot_distribution(0.5)
+```
+
+**cutoff = 1.0**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, cutoff_1}
+plot_distribution(1.0)
+```
+
+**cutoff = 2.0**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, cutoff_2}
+plot_distribution(2.0)
+```
+
+**cutoff = 4.0**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, cutoff_4}
+plot_distribution(4.0)
+```
+
+Now, let's split the original logerror distribution over three different counties to see how the distribution looks like.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Ditrib_logerror_by_county }
 names(table(zillow$region_county))
@@ -318,20 +394,6 @@ ggpairs(tax_features)
 
 We see that there is not a strong correlation between the tax features and the logerror. However, there is a strong correlation between the tax properties themselves which is not surprising.
 
-Let's explore the month in which the transactions occurred and the correlation with logerror. To do this, I will create a new feature "trans_month" that contains the months information (1, 2, 3, etc). The reasoning behind this comes from the fact that "season change" drives the real estate market. I want to see whether Zestimate takes this into account or not, i.e. is there a strong correlation between the transaction month and the logerror?
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, trans_month}
-zillow$trans_month = format(as.Date(zillow$date), "%m")
-
-ggplot(aes(x = trans_month, y = ..count../sum(..count..)*100), 
-       data = subset(zillow, !is.na(trans_month))) +
-  geom_bar(fill = "brown") +
-  xlab("trans_month") + ylab("%") +
-  labs(title = "transaction month") 
-```
-
-This histogram only tells us about the transaction data available to us. It contains no information about the total number of transactions in each month.
-
 Now, let's plot the average logerror vs transaction month.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, conditional_summaries}
@@ -504,16 +566,6 @@ I think this plot is one of the most important findings of this EDA. The plot sh
 ### Plot Three: The Map Plot
 
 #### A plot of the properties/logerror on a map 
-```{r echo=FALSE, message=FALSE, warning=FALSE, x_y_logerror}
-leaflet(zillow.coor_error) %>% addTiles() %>%
-  fitBounds(min_lon, min_lat, max_lon, max_lat) %>%
-  addCircleMarkers(color=~color_bar(logerror), fillOpacity = 1, 
-                   stroke = FALSE, radius = 3) %>%
-   addLegend("topleft", pal = color_bar, values = ~logerror, 
-             title = "logerror", opacity = 1)
-```
-
-
 
 ### Description Three
 
