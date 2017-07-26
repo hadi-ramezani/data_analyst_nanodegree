@@ -6,7 +6,7 @@
 #! /usr/bin/env python
 
 
-# Please see EnronFraud_ML for more details on the dataset and approches.
+# Please see EnronFraud_ML.docx for more details on the dataset and approches.
 # 
 # Let's first import some libraries and modules.
 
@@ -17,11 +17,11 @@ import pickle
 import pandas as pd
 import numpy as np
 import warnings
+sys.path.append("../tools/")
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
 from sklearn.metrics import *
 from sklearn.grid_search import GridSearchCV
-sys.path.append("../tools/")
 
 warnings.filterwarnings('ignore')
 
@@ -43,7 +43,7 @@ def evaluate_clf(clf, features_test, labels_test, name):
     
 def remove_from_list(orig_list, my_list):
     '''
-    This function takes two lists and removes the intems of the 
+    This function takes two lists and removes the items of the 
     second list(my_list) from the original list (orig_list)
     '''
     for item in my_list:
@@ -79,14 +79,12 @@ poi = df['poi']
 df.drop(labels=['poi'], axis=1, inplace = True)
 df.insert(0, 'poi', poi)
 
-#convert booleans to int
 from sklearn.preprocessing import LabelEncoder
 
-# Change the datatype to float. This is probably not the best way to do this but it 
-# apparently works.
-#df = df.astype(float)/1
+# Change the datatype to float. 
 df = df.apply(lambda x: pd.to_numeric(x, errors='coerce')).copy() 
 
+#convert booleans to int
 for c in df.columns:
     if df[c].dtype == 'bool':
         lbl = LabelEncoder()
@@ -124,7 +122,7 @@ df['poi'].sum()
 df.index
 
 
-# There is an employee named 'TOTAL' which contains the sum of all values from other employees. This is out outlier, let's remove it.
+# There is an employee named 'TOTAL' which contains the sum of all values from other employees. This is our outlier, let's remove it.
 
 # In[1453]:
 
@@ -211,7 +209,7 @@ from sklearn.cross_validation import train_test_split
 features_train, features_test, labels_train, labels_test =     train_test_split(features, labels, test_size=0.3, random_state=42)
 
 
-# Instead of assigning different names to my classifiers I put then into "if clauses". That way we can turn them on/off quickly.  
+# Instead of assigning different names to my classifiers I put them into "if clauses". That way we can turn them on/off quickly.  
 
 # In[1459]:
 
