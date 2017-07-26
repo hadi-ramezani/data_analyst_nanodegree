@@ -1,0 +1,6 @@
+Udacity forum:
+https://discussions.udacity.com/t/project-fear-strugging-with-machine-learning-project/198529
+https://discussions.udacity.com/t/plotting-scatter-matrix-using-pandas-from-enron-data/188703/2
+https://discussions.udacity.com/t/pickling-pandas-df/174753/2
+
+Stackoverflow, kaggle website, pandas documentations, and sklearn documentations were used in this project. 
