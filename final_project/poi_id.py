@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1445]:
+# In[395]:
 
 #! /usr/bin/env python
 
@@ -10,7 +10,7 @@
 # 
 # Let's first import some libraries and modules.
 
-# In[1446]:
+# In[396]:
 
 import sys
 import pickle
@@ -21,38 +21,14 @@ sys.path.append("../tools/")
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
 from sklearn.metrics import *
+from poi_functions import *
 from sklearn.grid_search import GridSearchCV
 
 warnings.filterwarnings('ignore')
 
 
 
-# In[1447]:
-
-def evaluate_clf(clf, features_test, labels_test, name):
-    '''
-    This function takes a classifier (clf), test features (features_test),
-    and test labels (labels_test) along with the method name (name) and 
-    prints out some evaluation metrics. Note that you should run tester.py
-    for an extensive evaluation.
-    '''
-    print ('Accuracy for', name, 'is: ', clf.score(features_test, labels_test))
-    pred = clf.predict(features_test)
-    print ('precision for', name, 'is: ', precision_score(pred, labels_test))
-    print ('recall for' , name, 'is: ', recall_score(pred, labels_test))
-    
-def remove_from_list(orig_list, my_list):
-    '''
-    This function takes two lists and removes the items of the 
-    second list(my_list) from the original list (orig_list)
-    '''
-    for item in my_list:
-        if item in orig_list:
-            orig_list.remove(item)
-    return orig_list
-
-
-# In[1448]:
+# In[397]:
 
 ### Load the dictionary containing the dataset
 with open("final_project_dataset.pkl", "r") as data_file:
@@ -61,7 +37,7 @@ with open("final_project_dataset.pkl", "r") as data_file:
 
 # Here, I'll convert the dictionary to a pandas dataframe to do some feature engineering.
 
-# In[1449]:
+# In[398]:
 
 # Convert the dictionary to a pd dataframe
 df = pd.DataFrame.from_records(list(data_dict.values()))
@@ -96,7 +72,7 @@ df.head()
 
 # Let's explore the data a bit.
 
-# In[1450]:
+# In[399]:
 
 #Get some basic information
 print df.info()
@@ -105,50 +81,53 @@ missing = df.isnull().sum(axis=0).reset_index()
 missing.columns = ['column_name', 'missing_count']
 missing = missing.ix[missing['missing_count']>0]
 missing = missing.sort_values(by='missing_count')
-print missing
+print missing.head()
+
+row_missing = df.isnull().sum(axis=1).reset_index()
+row_missing.columns = ['column_name', 'missing_count']
+row_missing = row_missing.sort_values(by='missing_count', ascending=False)
+print row_missing.head()
 
 
 # How many poi do we have here:
 
-# In[1451]:
+# In[400]:
 
 df['poi'].sum()
 
 
 # Let's take a quick look at the employees name.
 
-# In[1452]:
+# In[401]:
 
 df.index
 
 
-# There is an employee named 'TOTAL' which contains the sum of all values from other employees. This is our outlier, let's remove it.
+# There is an employee named 'TOTAL' which contains the sum of all values from other employees. There is another employee named 'THE TRAVEL AGENCY IN THE PARK'. These are our outlier, let's remove them. 
 
-# In[1453]:
+# In[402]:
 
-df = df.drop(['TOTAL'])
+df = df.drop(['TOTAL', 'THE TRAVEL AGENCY IN THE PARK'])
 
 
 # Rescale the financial features. Note that this helps NB algorithm but apparently hurts DecisionTree a bit. 
 
-# In[1454]:
+# In[403]:
 
-if True:
-    from sklearn.preprocessing import MinMaxScaler
-    df = df.fillna(0)
-    features = list(df.columns.values)
-    other_features = ['poi', 'to_messages','shared_receipt_with_poi',
-                      'from_messages', 'from_poi_to_this_person', 'from_this_person_to_poi']
-    financial_features = remove_from_list(features, other_features)
+from sklearn.preprocessing import MinMaxScaler
+df = df.fillna(0)
+features = list(df.columns.values)
+other_features = ['poi', 'to_messages','shared_receipt_with_poi',
+                    'from_messages', 'from_poi_to_this_person', 'from_this_person_to_poi']
+financial_features = remove_from_list(features, other_features)
 
-    scaler = MinMaxScaler()
-    df[financial_features] = scaler.fit_transform(df[financial_features])
-    df.head()
+scaler = MinMaxScaler()
+df[financial_features] = scaler.fit_transform(df[financial_features])
 
 
 # After a few iterations, I realized that we need to create some new features to make a good models. Here I create two new features. 1) the portion of emails that a person sent to a poi, 2) the portion of emails that a person received from a poi. Intuitevely, these two must be very important. 
 
-# In[1455]:
+# In[404]:
 
 ### Create new feature(s)
 df['to_poi_ratio'] = df['from_this_person_to_poi']/df['from_messages']
@@ -158,7 +137,7 @@ df = df.fillna(0)
 
 # Prepare the data for compatibility with sklearn.
 
-# In[1456]:
+# In[405]:
 
 labels = df['poi'].values
 features = df.drop(['poi'], axis = 1).values
@@ -166,7 +145,7 @@ features = df.drop(['poi'], axis = 1).values
 
 # Do a first round of feature selection. Here I use SelectKBest to get the score of all features. I'll then drop the features that have score of 2 or smaller.
 
-# In[1457]:
+# In[406]:
 
 from sklearn.feature_selection import SelectKBest
 # Create a SelectKBest object.
@@ -176,9 +155,9 @@ features = select.fit_transform(features, labels)
 KBest_scores = select.scores_
 print KBest_scores
 # Find important features
-important_features = df.drop(['poi'], axis = 1).columns.values[np.where(KBest_scores > 2)]
+important_features = df.drop(['poi'], axis = 1).columns.values[np.where(KBest_scores > 10)]
 # Find features that will be dropped.
-dropped_features = df.drop(['poi'], axis = 1).columns.values[np.where(KBest_scores <= 2)]
+dropped_features = df.drop(['poi'], axis = 1).columns.values[np.where(KBest_scores <= 10)]
 #Print some information
 print ("Important features", important_features)
 print ("Number of important features", len(important_features))
@@ -190,7 +169,7 @@ for feature in dropped_features:
 
 # Convert the dataframe back to a dictionary, and split them again.
 
-# In[1458]:
+# In[407]:
 
 # create a list of column names:
 features_list = df.columns.values
@@ -211,7 +190,7 @@ features_train, features_test, labels_train, labels_test =     train_test_split(
 
 # Instead of assigning different names to my classifiers I put them into "if clauses". That way we can turn them on/off quickly.  
 
-# In[1459]:
+# In[408]:
 
 # NaiveBayes 
 if True:
@@ -221,7 +200,7 @@ if True:
     evaluate_clf(clf, features_test, labels_test, 'NB')
 
 
-# In[1460]:
+# In[409]:
 
 # Decision Tree
 if False:
@@ -237,7 +216,7 @@ if False:
     evaluate_clf(clf, features_test, labels_test, 'DecisionTree')
 
 
-# In[1461]:
+# In[410]:
 
 # Support Vector Machine
 if False:
@@ -252,7 +231,7 @@ if False:
     evaluate_clf(clf, features_test, labels_test, 'SVM')
 
 
-# In[1462]:
+# In[411]:
 
 # Random Forest
 if False:
@@ -267,7 +246,7 @@ if False:
     evaluate_clf(clf, features_test, labels_test, 'RandomForest')
 
 
-# In[1463]:
+# In[412]:
 
 ### Dump your classifier, dataset, and features_list so anyone can
 ### check your results. You do not need to change anything below, but make sure

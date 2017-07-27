@@ -174,7 +174,7 @@ div#notebook {
 
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1445]:</div>
+<div class="prompt input_prompt">In&nbsp;[395]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">#! /usr/bin/env python</span>
@@ -198,7 +198,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1446]:</div>
+<div class="prompt input_prompt">In&nbsp;[396]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">import</span> <span class="nn">sys</span>
@@ -210,6 +210,7 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">feature_format</span> <span class="kn">import</span> <span class="n">featureFormat</span><span class="p">,</span> <span class="n">targetFeatureSplit</span>
 <span class="kn">from</span> <span class="nn">tester</span> <span class="kn">import</span> <span class="n">dump_classifier_and_data</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">poi_functions</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
 
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
@@ -222,40 +223,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1447]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="k">def</span> <span class="nf">evaluate_clf</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    This function takes a classifier (clf), test features (features_test),</span>
-<span class="sd">    and test labels (labels_test) along with the method name (name) and </span>
-<span class="sd">    prints out some evaluation metrics. Note that you should run tester.py</span>
-<span class="sd">    for an extensive evaluation.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;Accuracy for&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s">&#39;is: &#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">features_test</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">))</span>
-    <span class="n">pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">features_test</span><span class="p">)</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;precision for&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s">&#39;is: &#39;</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">))</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;recall for&#39;</span> <span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="s">&#39;is: &#39;</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">labels_test</span><span class="p">))</span>
-    
-<span class="k">def</span> <span class="nf">remove_from_list</span><span class="p">(</span><span class="n">orig_list</span><span class="p">,</span> <span class="n">my_list</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    This function takes two lists and removes the items of the </span>
-<span class="sd">    second list(my_list) from the original list (orig_list)</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">my_list</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">orig_list</span><span class="p">:</span>
-            <span class="n">orig_list</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">orig_list</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[1448]:</div>
+<div class="prompt input_prompt">In&nbsp;[397]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">### Load the dictionary containing the dataset</span>
@@ -280,7 +248,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1449]:</div>
+<div class="prompt input_prompt">In&nbsp;[398]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c"># Convert the dictionary to a pd dataframe</span>
@@ -322,7 +290,7 @@ div#notebook {
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[1449]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[398]:</div>
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -504,7 +472,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1450]:</div>
+<div class="prompt input_prompt">In&nbsp;[399]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">#Get some basic information</span>
@@ -514,7 +482,12 @@ div#notebook {
 <span class="n">missing</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;column_name&#39;</span><span class="p">,</span> <span class="s">&#39;missing_count&#39;</span><span class="p">]</span>
 <span class="n">missing</span> <span class="o">=</span> <span class="n">missing</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="n">missing</span><span class="p">[</span><span class="s">&#39;missing_count&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">missing</span> <span class="o">=</span> <span class="n">missing</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s">&#39;missing_count&#39;</span><span class="p">)</span>
-<span class="k">print</span> <span class="n">missing</span>
+<span class="k">print</span> <span class="n">missing</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+
+<span class="n">row_missing</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">row_missing</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;column_name&#39;</span><span class="p">,</span> <span class="s">&#39;missing_count&#39;</span><span class="p">]</span>
+<span class="n">row_missing</span> <span class="o">=</span> <span class="n">row_missing</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s">&#39;missing_count&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">row_missing</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
 </div>
@@ -553,26 +526,18 @@ total_stock_value            126 non-null float64
 dtypes: float64(19), int64(1)
 memory usage: 24.0+ KB
 None
-                  column_name  missing_count
-19          total_stock_value             20
-18             total_payments             21
-13           restricted_stock             36
-5     exercised_stock_options             44
-15                     salary             51
-6                    expenses             51
-12                      other             53
-17                to_messages             60
-16    shared_receipt_with_poi             60
-7               from_messages             60
-8     from_poi_to_this_person             60
-9     from_this_person_to_poi             60
-1                       bonus             64
-11        long_term_incentive             80
-3             deferred_income             97
-2           deferral_payments            107
-14  restricted_stock_deferred            128
-4               director_fees            129
-10              loan_advances            142
+                column_name  missing_count
+19        total_stock_value             20
+18           total_payments             21
+13         restricted_stock             36
+5   exercised_stock_options             44
+15                   salary             51
+                       column_name  missing_count
+90               LOCKHART EUGENE E             19
+73               SCRIMSHAW MATTHEW             17
+101  THE TRAVEL AGENCY IN THE PARK             17
+26                   WODRASKA JOHN             17
+62                    WROBEL BRUCE             17
 </pre>
 </div>
 </div>
@@ -593,7 +558,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1451]:</div>
+<div class="prompt input_prompt">In&nbsp;[400]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">df</span><span class="p">[</span><span class="s">&#39;poi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -607,7 +572,7 @@ None
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[1451]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[400]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -632,7 +597,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1452]:</div>
+<div class="prompt input_prompt">In&nbsp;[401]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">df</span><span class="o">.</span><span class="n">index</span>
@@ -646,7 +611,7 @@ None
 <div class="output">
 
 
-<div class="output_area"><div class="prompt output_prompt">Out[1452]:</div>
+<div class="output_area"><div class="prompt output_prompt">Out[401]:</div>
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -672,17 +637,17 @@ None
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>There is an employee named 'TOTAL' which contains the sum of all values from other employees. This is our outlier, let's remove it.</p>
+<p>There is an employee named 'TOTAL' which contains the sum of all values from other employees. There is another employee named 'THE TRAVEL AGENCY IN THE PARK'. These are our outlier, let's remove them.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1453]:</div>
+<div class="prompt input_prompt">In&nbsp;[402]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s">&#39;TOTAL&#39;</span><span class="p">])</span>
+<div class=" highlight hl-ipython2"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s">&#39;TOTAL&#39;</span><span class="p">,</span> <span class="s">&#39;THE TRAVEL AGENCY IN THE PARK&#39;</span><span class="p">])</span>
 </pre></div>
 
 </div>
@@ -702,20 +667,18 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1454]:</div>
+<div class="prompt input_prompt">In&nbsp;[403]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-    <span class="n">other_features</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;poi&#39;</span><span class="p">,</span> <span class="s">&#39;to_messages&#39;</span><span class="p">,</span><span class="s">&#39;shared_receipt_with_poi&#39;</span><span class="p">,</span>
-                      <span class="s">&#39;from_messages&#39;</span><span class="p">,</span> <span class="s">&#39;from_poi_to_this_person&#39;</span><span class="p">,</span> <span class="s">&#39;from_this_person_to_poi&#39;</span><span class="p">]</span>
-    <span class="n">financial_features</span> <span class="o">=</span> <span class="n">remove_from_list</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">other_features</span><span class="p">)</span>
+<div class=" highlight hl-ipython2"><pre><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">other_features</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;poi&#39;</span><span class="p">,</span> <span class="s">&#39;to_messages&#39;</span><span class="p">,</span><span class="s">&#39;shared_receipt_with_poi&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;from_messages&#39;</span><span class="p">,</span> <span class="s">&#39;from_poi_to_this_person&#39;</span><span class="p">,</span> <span class="s">&#39;from_this_person_to_poi&#39;</span><span class="p">]</span>
+<span class="n">financial_features</span> <span class="o">=</span> <span class="n">remove_from_list</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">other_features</span><span class="p">)</span>
 
-    <span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
-    <span class="n">df</span><span class="p">[</span><span class="n">financial_features</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">financial_features</span><span class="p">])</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="n">financial_features</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">financial_features</span><span class="p">])</span>
 </pre></div>
 
 </div>
@@ -735,7 +698,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1455]:</div>
+<div class="prompt input_prompt">In&nbsp;[404]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">### Create new feature(s)</span>
@@ -761,7 +724,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1456]:</div>
+<div class="prompt input_prompt">In&nbsp;[405]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="n">labels</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;poi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
@@ -785,7 +748,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1457]:</div>
+<div class="prompt input_prompt">In&nbsp;[406]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span>
@@ -796,9 +759,9 @@ None
 <span class="n">KBest_scores</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">scores_</span>
 <span class="k">print</span> <span class="n">KBest_scores</span>
 <span class="c"># Find important features</span>
-<span class="n">important_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s">&#39;poi&#39;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">KBest_scores</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)]</span>
+<span class="n">important_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s">&#39;poi&#39;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">KBest_scores</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)]</span>
 <span class="c"># Find features that will be dropped.</span>
-<span class="n">dropped_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s">&#39;poi&#39;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">KBest_scores</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">)]</span>
+<span class="n">dropped_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s">&#39;poi&#39;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">KBest_scores</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">)]</span>
 <span class="c">#Print some information</span>
 <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Important features&quot;</span><span class="p">,</span> <span class="n">important_features</span><span class="p">)</span>
 <span class="k">print</span> <span class="p">(</span><span class="s">&quot;Number of important features&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">important_features</span><span class="p">))</span>
@@ -818,19 +781,15 @@ None
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[ 21.32789041   0.20970584  11.73269808   2.0893099   25.3801053
-   6.37461449   0.15877024   5.44668748   2.47052122   7.30140665
-  10.22290421   4.26357664   9.4807432    0.06447703  18.86179532
-   8.90382156   1.75169428   8.96781935  24.75252302  16.87387026
-   3.29382863]
-(&apos;Important features&apos;, array([&apos;bonus&apos;, &apos;deferred_income&apos;, &apos;director_fees&apos;,
-       &apos;exercised_stock_options&apos;, &apos;expenses&apos;, &apos;from_poi_to_this_person&apos;,
-       &apos;from_this_person_to_poi&apos;, &apos;loan_advances&apos;, &apos;long_term_incentive&apos;,
-       &apos;other&apos;, &apos;restricted_stock&apos;, &apos;salary&apos;, &apos;shared_receipt_with_poi&apos;,
-       &apos;total_payments&apos;, &apos;total_stock_value&apos;, &apos;to_poi_ratio&apos;,
-       &apos;from_poi_ratio&apos;], dtype=object))
-(&apos;Number of important features&apos;, 17)
-(&apos;Number of dropped features: &apos;, 4)
+<pre>[ 21.06000171   0.21705893  11.59554766   2.10765594  25.09754153
+   6.23420114   0.1641645    5.34494152   2.42650813   7.2427304
+  10.07245453   4.24615354   9.34670079   0.06498431  18.57570327
+   8.74648553   1.69882435   8.87383526  24.46765405  16.64170707
+   3.21076192]
+(&apos;Important features&apos;, array([&apos;bonus&apos;, &apos;deferred_income&apos;, &apos;exercised_stock_options&apos;,
+       &apos;long_term_incentive&apos;, &apos;salary&apos;, &apos;total_stock_value&apos;, &apos;to_poi_ratio&apos;], dtype=object))
+(&apos;Number of important features&apos;, 7)
+(&apos;Number of dropped features: &apos;, 14)
 </pre>
 </div>
 </div>
@@ -851,7 +810,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1458]:</div>
+<div class="prompt input_prompt">In&nbsp;[407]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c"># create a list of column names:</span>
@@ -889,7 +848,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1459]:</div>
+<div class="prompt input_prompt">In&nbsp;[408]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c"># NaiveBayes </span>
@@ -910,8 +869,8 @@ None
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>(&apos;Accuracy for&apos;, &apos;NB&apos;, &apos;is: &apos;, 0.90909090909090906)
-(&apos;precision for&apos;, &apos;NB&apos;, &apos;is: &apos;, 0.25)
+<pre>(&apos;Accuracy for&apos;, &apos;NB&apos;, &apos;is: &apos;, 0.88636363636363635)
+(&apos;precision for&apos;, &apos;NB&apos;, &apos;is: &apos;, 0.40000000000000002)
 (&apos;recall for&apos;, &apos;NB&apos;, &apos;is: &apos;, 0.5)
 </pre>
 </div>
@@ -923,7 +882,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1460]:</div>
+<div class="prompt input_prompt">In&nbsp;[409]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c"># Decision Tree</span>
@@ -947,7 +906,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1461]:</div>
+<div class="prompt input_prompt">In&nbsp;[410]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c"># Support Vector Machine</span>
@@ -970,7 +929,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1462]:</div>
+<div class="prompt input_prompt">In&nbsp;[411]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c"># Random Forest</span>
@@ -993,7 +952,7 @@ None
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1463]:</div>
+<div class="prompt input_prompt">In&nbsp;[412]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span class="c">### Dump your classifier, dataset, and features_list so anyone can</span>
