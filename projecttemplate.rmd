@@ -49,6 +49,7 @@ The data set contains 60 variables and 90275 observations.
 
 Our objective is to predict the residual error. So, let's plot a histogram of that. I'll plot all histograms in terms of percentages to better understand them. I'll first do a summary to help me setup the graph.
 
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Ditribution_of_logerror }
 summary(zillow$logerror)
 grid.arrange(ggplot(aes(x = logerror, y = ..count../sum(..count..)*100), 
@@ -482,7 +483,7 @@ max_lon = max(zillow.wo_outlier.coor_error$longitude)
 min_lat = min(zillow.wo_outlier.coor_error$latitude)
 max_lat = max(zillow.wo_outlier.coor_error$latitude)
 
-color_bar = colorNumeric('RdYlBu', domain = zillow.wo_outlier.coor_error$logerror)
+color_bar = colorNumeric('RdYlBu', domain = zillow.wo_outlier.coor_error$)
 leaflet(zillow.wo_outlier.coor_error) %>% addTiles() %>%
   fitBounds(min_lon, min_lat, max_lon, max_lat) %>%
   addCircleMarkers(color=~color_bar(logerror), fillOpacity = 1, 
