@@ -218,11 +218,16 @@
         update(month);
         month++;
 
-        if(month >= 12) {
+        if(month > 12) {
 
             clearInterval(month_interval);
 
             plot_all(data);
+
+            // Add title
+            d3.select('h2')
+              .text("Outlier Distribution in Total");
+
 
             // Define buttons (month and all data)
             var buttons = d3.select("body")
