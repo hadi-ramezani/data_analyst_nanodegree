@@ -28,14 +28,14 @@
     }
 
     h2 {
-        text-align: center;
+        text-align: left;
         color: black;
     }
 
     div.months_buttons {
         position: fixed;
-        top: 40px;
-        left: 750px;
+        top: 30px;
+        left: 100px;
         width: 500px;
     }
 
@@ -52,7 +52,7 @@
         position: fixed;
         background-color: #4CAF50;
         color: white;
-        top: 50px;
+        top: 70px;
         left: 250px;
         font-size: 1.5em;
     }
@@ -62,18 +62,21 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
 <script type="text/javascript">
-    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    var margin = {top: 60, right: 20, bottom: 30, left: 40},
         width = 500 - margin.left - margin.right,
-        height = 960 - margin.top - margin.bottom,
+        height = 930 - margin.top - margin.bottom,
         outlier_cutoff = 0.5;
 
+    // An array to hold month numbers
     var months = [];
     for (var i=1; i <=12; i++){
         months.push(i);
     }
 
+
     function plot_points(data) {
-      
+        
+        // Add title
         d3.select("body")
           .append("h2")
           .text("Outlier Distribution in Month ");
@@ -94,13 +97,15 @@
         y_map = function(d) { return y_scale(y_value(d));},
         y_axis = d3.svg.axis().scale(y_scale).orient("left");
 
+        // Get the max error
         var max_logerror = d3.max(data, function(d) {
             return Math.abs(d["logerror"]);
         });
 
+        // Filter data based on the outlier cutoff
         data = data.filter(function(d) {return Math.abs(d["logerror"]) > outlier_cutoff })
 
-        // setup fill color
+        // setup fill color: overestimation in blue, underestimation in red.
         var c_value = function(d) { return Math.sign(d);};
         var color = function(d) {
             if (c_value(d) === 1) {
@@ -108,7 +113,10 @@
             } else return "red";
         };
 
+
         var logerror_value = function(d) { return d["logerror"];};
+        
+        // Map the area of the circles to logerror
         var radius = d3.scale.sqrt()
                       .domain([outlier_cutoff, max_logerror])
                       .range([2, 10]);
@@ -150,41 +158,26 @@
            .style("text-anchor", "end")
            .text("Latitude");
 
+
         function update(month) {
+            // Filter data based on month value
             var filtered = data.filter(function (d) {
                 return d['date'].getUTCMonth() === month;
             });
 
+            // Add title
             d3.select('h2')
               .text("Outlier Distribution in Month " + (month + 1));
 
+            // Select add circles on the page
             var circles = svg.selectAll('circle')
                              .data(data);
 
+            // Remove all circles first in order to plot the new ones
             circles.remove();
 
-            svg.append("g").selectAll("circle")
-               .data(filtered)
-               .enter().append("circle")
-               .attr("class", "circle")
-               .attr("r", function(d) { return radius(Math.abs(d["logerror"]));})
-               .attr("cx", x_map)
-               .attr("cy", y_map)
-               .style("fill", function(d) { return color(c_value(d["logerror"]));}) 
-               .on("mouseover", function(d) {
-                    tooltip.transition()
-                          .duration(200)
-                          .style("opacity", .9);
-                    tooltip.html(d["id_parcel"] + "<br/> (" + x_value(d) 
-                    + ", " + y_value(d) + ")" + "<br/> logerror: " + logerror_value(d))
-                      .style("left", (d3.event.pageX + 15) + "px")
-                      .style("top", (d3.event.pageY - 30) + "px");
-                })
-                .on("mouseout", function(d) {
-                    tooltip.transition()
-                           .duration(500)
-                           .style("opacity", 0);
-                });
+            // Plot the filtered data
+            plot_all(filtered);
         }
 
         function plot_all(data) {
@@ -249,6 +242,7 @@
 
             buttons.on("click", function(d) {
 
+                // Revert the style of other buttons
                 d3.select(".months_buttons")
                   .selectAll("div")
                   .transition()
@@ -256,12 +250,14 @@
                   .style("color", "white")
                   .style("background", "#4CAF50");
 
+                // Revert the style of total_button on month click
                 d3.select(".total_button")
                   .transition()
                   .duration(500)
                   .style("color", "white")
                   .style("background", "#4CAF50");
 
+                // Change the style of the clicked button
                 d3.select(this)
                   .transition()
                   .duration(500)
@@ -273,6 +269,7 @@
 
             total_button.on("click", function(d){
 
+                // Revert the style of 
                 d3.select(".months_buttons")
                   .selectAll("div")
                   .transition()
@@ -298,7 +295,7 @@
   <script type="text/javascript">
       var format = d3.time.format("%Y-%m-%d");
       // load data
-      d3.csv("sample_zillow.csv", function(d) {
+      d3.csv("zillow.csv", function(d) {
           d['latitude'] = +d['latitude']/1e6;
           d['longitude'] = +d['longitude']/1e6;
           d['logerror'] = +d['logerror'];
