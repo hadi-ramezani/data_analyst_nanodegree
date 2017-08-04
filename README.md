@@ -2,7 +2,8 @@
 
 Summary: Zillow's Home Value Prediction competition is a two-round competition in which the first round of the competition aims at predicting the Zestimate's residual error. Here, I created an effective visualization on the number (and the magnitude, and distribution) of outliers for the ZillowPrize dataset (see https://github.com/hadi-ramezani/ZillowPrize for more details) using d3.js. The main finding here is that the number of outliers (abs(logerror) > 0.5) are much smaller at the end of the year (during the months 10, 11, and 12). 
 
-Design: Chart type: 
+Design: 
+ 
 * I decided to use a scatter plot to show the outliers because of the following reasons:
 	1) The main goal here is to show the number of outliers not their exact location although some information on the distribution of the outliers is inherently included in the visualization.
 	2) A line chart would also convey the main message here but it would lack many other information that a scatter plot would include.
