@@ -34,16 +34,26 @@
 
     div.months_buttons {
         position: fixed;
-        top: 10px;
-        left: 40px;
+        top: 40px;
+        left: 750px;
         width: 500px;
     }
 
     div.months_buttons div {
-        background-color: rgb(251, 201, 127);
+        background-color: #4CAF50;
+        color: white;
         padding: 3px;
         margin: 7px;
         float: left;
+        font-size: 1.5em;
+    }
+
+    div.total_button {
+        position: fixed;
+        background-color: #4CAF50;
+        color: white;
+        top: 50px;
+        left: 250px;
         font-size: 1.5em;
     }
 
@@ -177,14 +187,11 @@
                 });
         }
 
-    var month = 0;
+        function plot_all(data) {
+            var circles = svg.selectAll('circle')
+                .data(data);
 
-    var month_interval = setInterval(function() {
-        update(month);
-        month++;
-
-        if(month >= 12) {
-            clearInterval(month_interval);
+            circles.remove();
 
             // draw dots
             svg.append("g")
@@ -210,6 +217,19 @@
                            .duration(500)
                            .style("opacity", 0);
                 })
+        }
+
+
+    var month = 0;
+
+    var month_interval = setInterval(function() {
+        update(month);
+        month++;
+
+        if(month >= 12) {
+            clearInterval(month_interval);
+
+            plot_all(data);
 
             var buttons = d3.select("body")
                             .append("div")
@@ -222,22 +242,52 @@
                                 return d;
                             });
 
-            buttons.on("click", function(d){
-            d3.select(".months_buttons")
-              .selectAll("div")
-              .transition()
-              .duration(500)
-              .style("color", "black")
-              .style("background", "rgb(251, 201, 127)");
+            var total_button = d3.select("body")
+                                 .append("div")
+                                 .attr("class", "total_button")
+                                 .text("All Data");
 
-            d3.select(this)
-              .transition()
-              .duration(500)
-              .style("background", "lightBlue")
-              .style("color", "white");
+            buttons.on("click", function(d) {
 
-            update(d-1);
-        })
+                d3.select(".months_buttons")
+                  .selectAll("div")
+                  .transition()
+                  .duration(500)
+                  .style("color", "white")
+                  .style("background", "#4CAF50");
+
+                d3.select(".total_button")
+                  .transition()
+                  .duration(500)
+                  .style("color", "white")
+                  .style("background", "#4CAF50");
+
+                d3.select(this)
+                  .transition()
+                  .duration(500)
+                  .style("background", "orange")
+                  .style("color", "black");
+
+                update(d-1);
+            })
+
+            total_button.on("click", function(d){
+
+                d3.select(".months_buttons")
+                  .selectAll("div")
+                  .transition()
+                  .duration(500)
+                  .style("color", "white")
+                  .style("background", "#4CAF50");
+
+                d3.select(this)
+                  .transition()
+                  .duration(500)
+                  .style("background", "orange")
+                  .style("color", "black");
+
+                plot_all(data);
+            })
       }
     }, 1000)
 
