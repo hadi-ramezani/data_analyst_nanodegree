@@ -158,28 +158,6 @@
            .style("text-anchor", "end")
            .text("Latitude");
 
-
-        function update(month) {
-            // Filter data based on month value
-            var filtered = data.filter(function (d) {
-                return d['date'].getUTCMonth() === month;
-            });
-
-            // Add title
-            d3.select('h2')
-              .text("Outlier Distribution in Month " + (month + 1));
-
-            // Select add circles on the page
-            var circles = svg.selectAll('circle')
-                             .data(data);
-
-            // Remove all circles first in order to plot the new ones
-            circles.remove();
-
-            // Plot the filtered data
-            plot_all(filtered);
-        }
-
         function plot_all(data) {
             var circles = svg.selectAll('circle')
                 .data(data);
@@ -212,18 +190,41 @@
                 })
         }
 
+        function update(month) {
+            // Filter data based on month value
+            var filtered = data.filter(function (d) {
+                return d['date'].getUTCMonth() === month;
+            });
+
+            // Add title
+            d3.select('h2')
+              .text("Outlier Distribution in Month " + (month + 1));
+
+            // Select add circles on the page
+            var circles = svg.selectAll('circle')
+                             .data(data);
+
+            // Remove all circles first in order to plot the new ones
+            circles.remove();
+
+            // Plot the filtered data
+            plot_all(filtered);
+        }
 
     var month = 0;
 
+    // Loop over all month for an author-driven visualization.
     var month_interval = setInterval(function() {
         update(month);
         month++;
 
         if(month >= 12) {
+
             clearInterval(month_interval);
 
             plot_all(data);
 
+            // Define buttons (month and all data)
             var buttons = d3.select("body")
                             .append("div")
                             .attr("class", "months_buttons")
@@ -277,11 +278,17 @@
                   .style("color", "white")
                   .style("background", "#4CAF50");
 
+                // Change the style of the clicked button
                 d3.select(this)
                   .transition()
                   .duration(500)
                   .style("background", "orange")
                   .style("color", "black");
+
+                // Add title
+                d3.select('h2')
+                  .text("Outlier Distribution in Total");
+
 
                 plot_all(data);
             })
@@ -296,6 +303,7 @@
       var format = d3.time.format("%Y-%m-%d");
       // load data
       d3.csv("zillow.csv", function(d) {
+          // Convert values to numerical values
           d['latitude'] = +d['latitude']/1e6;
           d['longitude'] = +d['longitude']/1e6;
           d['logerror'] = +d['logerror'];
