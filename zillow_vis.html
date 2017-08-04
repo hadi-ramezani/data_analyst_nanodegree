@@ -3,78 +3,70 @@
 <meta charset="utf-8">
 
 <style>
-body {
-  font: 11px sans-serif;
-}
+    body {
+        font: 11px sans-serif;
+    }
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    } 
 
-.circle {
-  stroke: #000;
-  stroke-width: 0.7;
-  opacity: 0.7;
-}
+    .circle {
+        stroke: #000;
+        stroke-width: 0.7;
+        opacity: 0.7;
+    }
 
-.tooltip {
-  position: absolute;
-  width: 200px;
-  height: 28px;
-  pointer-events: none;
-}
+    .tooltip {
+      position: absolute;
+      width: 200px;
+      height: 28px;
+      pointer-events: none;
+    }
 
-h2 {
-  text-align: center;
-  color: black;
-}
-      div.months_buttons {
+    h2 {
+        text-align: center;
+        color: black;
+    }
+
+    div.months_buttons {
         position: fixed;
-        top: 5px;
-        left: 1000px;
-      }
+        top: 40px;
+        left: 750px;
+        width: 500px;
+    }
 
-      div.months_buttons div {
+    div.months_buttons div {
         background-color: rgb(251, 201, 127);
         padding: 3px;
         margin: 7px;
-      }
-
+        float: left;
+        font-size: 1.5em;
+    }
 
 </style>
+
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
-
 <script type="text/javascript">
-  var margin = {top: 20, right: 20, bottom: 30, left: 40},
-      width = 500 - margin.left - margin.right,
-      height = 960 - margin.top - margin.bottom,
-      outlier_cutoff = 0.5;
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 500 - margin.left - margin.right,
+        height = 960 - margin.top - margin.bottom,
+        outlier_cutoff = 0.5;
 
-  var months = [];
-  for (var i=1; i <=12; i++){
-    months.push(i);
-  }
+    var months = [];
+    for (var i=1; i <=12; i++){
+        months.push(i);
+    }
 
-  function plot_points(data) {
+    function plot_points(data) {
       
       d3.select("body")
         .append("h2")
         .text("Transaction Month ");
-
-      var buttons = d3.select("body")
-                      .append("div")
-                      .attr("class", "months_buttons")
-                      .selectAll("div")
-                      .data(months)
-                      .enter()
-                      .append("div")
-                      .text(function(d) {
-                        return d;
-                      });
 
       // setup x 
       var x_value = function(d) { return d["longitude"];}, // data -> value
@@ -149,30 +141,6 @@ h2 {
         .text("Latitude");
 
 
-    // draw dots
-    svg.append("g")
-        .selectAll("circle")
-        .data(data)
-        .enter().append("circle")
-        .attr("class", "circle")
-        .attr("r", function(d) { return radius(Math.abs(d["logerror"]));})
-        .attr("cx", x_map)
-        .attr("cy", y_map)
-        .style("fill", function(d) { return color(c_value(d["logerror"]));}) 
-        .on("mouseover", function(d) {
-            tooltip.transition()
-                 .duration(200)
-                 .style("opacity", .9);
-            tooltip.html(d["id_parcel"] + "<br/> (" + x_value(d) 
-            + ", " + y_value(d) + ")" + "<br/> logerror: " + logerror_value(d))
-                .style("left", (d3.event.pageX + 15) + "px")
-                .style("top", (d3.event.pageY - 30) + "px");
-        })
-        .on("mouseout", function(d) {
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-        })
 
   function update(month) {
       var filtered = data.filter(function (d) {
@@ -220,6 +188,59 @@ h2 {
 
       if(month >= 12) {
         clearInterval(month_interval);
+
+            // draw dots
+      svg.append("g")
+        .selectAll("circle")
+        .data(data)
+        .enter().append("circle")
+        .attr("class", "circle")
+        .attr("r", function(d) { return radius(Math.abs(d["logerror"]));})
+        .attr("cx", x_map)
+        .attr("cy", y_map)
+        .style("fill", function(d) { return color(c_value(d["logerror"]));}) 
+        .on("mouseover", function(d) {
+            tooltip.transition()
+                 .duration(200)
+                 .style("opacity", .9);
+            tooltip.html(d["id_parcel"] + "<br/> (" + x_value(d) 
+            + ", " + y_value(d) + ")" + "<br/> logerror: " + logerror_value(d))
+                .style("left", (d3.event.pageX + 15) + "px")
+                .style("top", (d3.event.pageY - 30) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        })
+
+        var buttons = d3.select("body")
+                .append("div")
+                .attr("class", "months_buttons")
+                .selectAll("div")
+                .data(months)
+                .enter()
+                .append("div")
+                .text(function(d) {
+                  return d;
+                });
+
+        buttons.on("click", function(d){
+            d3.select(".months_buttons")
+              .selectAll("div")
+              .transition()
+              .duration(500)
+              .style("color", "black")
+              .style("background", "rgb(251, 201, 127)");
+
+            d3.select(this)
+              .transition()
+              .duration(500)
+              .style("background", "lightBlue")
+              .style("color", "white");
+
+            update(d-1);
+        })
       }
     }, 1000)
 
@@ -231,7 +252,7 @@ h2 {
   <script type="text/javascript">
     var format = d3.time.format("%Y-%m-%d");
     // load data
-    d3.csv("sample_zillow.csv", function(d) {
+    d3.csv("zillow.csv", function(d) {
       d['latitude'] = +d['latitude']/1e6;
       d['longitude'] = +d['longitude']/1e6;
       d['logerror'] = +d['logerror'];
