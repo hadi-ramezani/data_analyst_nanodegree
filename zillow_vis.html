@@ -14,7 +14,7 @@ body {
   shape-rendering: crispEdges;
 }
 
-.dot {
+.circle {
   stroke: #000;
   stroke-width: 0.7;
   opacity: 0.7;
@@ -26,6 +26,24 @@ body {
   height: 28px;
   pointer-events: none;
 }
+
+h2 {
+  text-align: center;
+  color: black;
+}
+      div.months_buttons {
+        position: fixed;
+        top: 5px;
+        left: 1000px;
+      }
+
+      div.months_buttons div {
+        background-color: rgb(251, 201, 127);
+        padding: 3px;
+        margin: 7px;
+      }
+
+
 </style>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
@@ -36,32 +54,54 @@ body {
       height = 960 - margin.top - margin.bottom,
       outlier_cutoff = 0.5;
 
+  var months = [];
+  for (var i=1; i <=12; i++){
+    months.push(i);
+  }
+
   function plot_points(data) {
-    // setup x 
-    var xValue = function(d) { return d["longitude"];}, // data -> value
-      xScale = d3.scale.linear()
+      
+      d3.select("body")
+        .append("h2")
+        .text("Transaction Month ");
+
+      var buttons = d3.select("body")
+                      .append("div")
+                      .attr("class", "months_buttons")
+                      .selectAll("div")
+                      .data(months)
+                      .enter()
+                      .append("div")
+                      .text(function(d) {
+                        return d;
+                      });
+
+      // setup x 
+      var x_value = function(d) { return d["longitude"];}, // data -> value
+      x_scale = d3.scale.linear()
                 .range([0, width])
-                .domain([d3.min(data, xValue), d3.max(data, xValue)]), // alue -> display
-      xMap = function(d) { return xScale(xValue(d));}, // data -> display
-      xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+                .domain([d3.min(data, x_value), d3.max(data, x_value)]), // alue -> display
+      x_map = function(d) { return x_scale(x_value(d));}, // data -> display
+      x_axis = d3.svg.axis().scale(x_scale).orient("bottom");
 
     // setup y
-    var yValue = function(d) { return d["latitude"];}, // data -> value
-        yScale = d3.scale.linear()
+    var y_value = function(d) { return d["latitude"];}, // data -> value
+        y_scale = d3.scale.linear()
                   .range([height, 0])
-                  .domain([d3.min(data, yValue), d3.max(data, yValue)]), // value -> display
-        yMap = function(d) { return yScale(yValue(d));}, // data -> display
-        yAxis = d3.svg.axis().scale(yScale).orient("left");
+                  .domain([d3.min(data, y_value), d3.max(data, y_value)]), // value -> display
+        y_map = function(d) { return y_scale(y_value(d));}, // data -> display
+        y_axis = d3.svg.axis().scale(y_scale).orient("left");
 
     var max_logerror = d3.max(data, function(d) {
         return Math.abs(d["logerror"]);
       });
 
+    data = data.filter(function(d) {return Math.abs(d["logerror"]) > outlier_cutoff })
+    console.log(data.length)
     // setup fill color
-    var cValue = function(d) { return Math.sign(d);};
+    var c_value = function(d) { return Math.sign(d);};
     var color = function(d) {
-        if (cValue(d) === 1) {
-          console.log(cValue(d));
+        if (c_value(d) === 1) {
             return "blue";
         } else return "red";
     };
@@ -70,6 +110,7 @@ body {
     var radius = d3.scale.sqrt()
                   .domain([outlier_cutoff, max_logerror])
                   .range([2, 10]);
+
 
     // add the graph canvas to the body of the webpage
     var svg = d3.select("body").append("svg")
@@ -87,7 +128,7 @@ body {
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
+        .call(x_axis)
         .append("text")
         .attr("class", "label")
         .attr("x", width)
@@ -98,7 +139,7 @@ body {
     // y-axis
     svg.append("g")
         .attr("class", "y axis")
-        .call(yAxis)
+        .call(y_axis)
         .append("text")
         .attr("class", "label")
         .attr("transform", "rotate(-90)")
@@ -109,41 +150,92 @@ body {
 
 
     // draw dots
-    svg.selectAll(".dot")
+    svg.append("g")
+        .selectAll("circle")
         .data(data)
         .enter().append("circle")
-        .filter(function(d) { return Math.abs(d["logerror"]) > outlier_cutoff })
-        .attr("class", "dot")
+        .attr("class", "circle")
         .attr("r", function(d) { return radius(Math.abs(d["logerror"]));})
-        .attr("cx", xMap)
-        .attr("cy", yMap)
-        .style("fill", function(d) { return color(cValue(d["logerror"]));}) 
-      .on("mouseover", function(d) {
-          tooltip.transition()
-               .duration(200)
-               .style("opacity", .9);
-          tooltip.html(d["id_parcel"] + "<br/> (" + xValue(d) 
-          + ", " + yValue(d) + ")" + "<br/> logerror: " + logerror_value(d))
-               .style("left", (d3.event.pageX + 5) + "px")
-               .style("top", (d3.event.pageY - 28) + "px");
-      })
-      .on("mouseout", function(d) {
-          tooltip.transition()
-               .duration(500)
-               .style("opacity", 0);
+        .attr("cx", x_map)
+        .attr("cy", y_map)
+        .style("fill", function(d) { return color(c_value(d["logerror"]));}) 
+        .on("mouseover", function(d) {
+            tooltip.transition()
+                 .duration(200)
+                 .style("opacity", .9);
+            tooltip.html(d["id_parcel"] + "<br/> (" + x_value(d) 
+            + ", " + y_value(d) + ")" + "<br/> logerror: " + logerror_value(d))
+                .style("left", (d3.event.pageX + 15) + "px")
+                .style("top", (d3.event.pageY - 30) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        })
+
+  function update(month) {
+      var filtered = data.filter(function (d) {
+          return d['date'].getUTCMonth() === month;
       });
+
+      d3.select('h2')
+        .text("Transaction Month " + (month + 1));
+
+      var circles = svg.selectAll('circle')
+                       .data(data);
+
+      circles.remove();
+
+      svg.append("g").selectAll("circle")
+             .data(filtered)
+             .enter().append("circle")
+             .attr("class", "circle")
+             .attr("r", function(d) { return radius(Math.abs(d["logerror"]));})
+             .attr("cx", x_map)
+             .attr("cy", y_map)
+             .style("fill", function(d) { return color(c_value(d["logerror"]));}) 
+             .on("mouseover", function(d) {
+                tooltip.transition()
+                  .duration(200)
+                  .style("opacity", .9);
+                tooltip.html(d["id_parcel"] + "<br/> (" + x_value(d) 
+                + ", " + y_value(d) + ")" + "<br/> logerror: " + logerror_value(d))
+                  .style("left", (d3.event.pageX + 15) + "px")
+                  .style("top", (d3.event.pageY - 30) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                  .duration(500)
+                  .style("opacity", 0);
+          });
+  }
+
+    var month = 0;
+
+    var month_interval = setInterval(function() {
+      update(month);
+      console.log(month)
+      month++;
+
+      if(month >= 12) {
+        clearInterval(month_interval);
+      }
+    }, 1000)
+
   };
 
 </script>
 
 <body>
   <script type="text/javascript">
+    var format = d3.time.format("%Y-%m-%d");
     // load data
-    d3.csv("zillow.csv", function(d) {
+    d3.csv("sample_zillow.csv", function(d) {
       d['latitude'] = +d['latitude']/1e6;
       d['longitude'] = +d['longitude']/1e6;
       d['logerror'] = +d['logerror'];
-      //debugger;
+      d['date'] = format.parse(d['date']);
       //console.log(d);
       return d;
       }, plot_points);
