@@ -20,6 +20,10 @@
         opacity: 0.7;
     }
 
+    .stack {
+        opacity: 0.8;
+    }
+
     .tooltip {
       position: absolute;
       width: 200px;
@@ -73,15 +77,6 @@
     	months.push(i);
     }
 
-    // setup fill color: overestimation in blue, underestimation in red.
-    var c_value = function(d) { return Math.sign(d);};
-    var color = function(d) {
-        if (c_value(d) === 1) {
-           	return "blue";
-        } 
-        return "red";
-    };
-
     function plot_points(data) {
         // Add title
         d3.select("body")
@@ -103,6 +98,15 @@
             .domain([d3.min(data, y_value), d3.max(data, y_value)]),
         y_map = function(d) { return y_scale(y_value(d));},
         y_axis = d3.svg.axis().scale(y_scale).orient("left");
+
+    	// setup fill color: overestimation in blue, underestimation in red.
+    	var c_value = function(d) { return Math.sign(d);};
+    	var color = function(d) {
+        	if (c_value(d) === 1) {
+           		return "blue";
+        	} 
+        	return "red";
+    	};
 
         // Get the max error
         var max_logerror = d3.max(data, function(d) {
@@ -158,7 +162,7 @@
         	.text("Latitude");
 
         function plot_all(data) {
-            var circles = svg.selectAll('circle')
+            var circles = svg.selectAll("circle")
             	.data(data);
 
             circles.remove();
@@ -189,120 +193,131 @@
                 })
         }
 
+        // A function to aggregate the data (number of over/underestimations for each month)
         function agg_month(leaves){
-        	var count = d3.sum(leaves, function(d) {
-            	return Math.sign(Math.abs(d['logerror']));
-        	});
 
+            // number of overestimations
         	var pos_count = d3.sum(leaves, function(d) {
-        		return Math.sign(d['logerror'] < 0) 
+        		return Math.sign(d["logerror"] >= 0) 
         	});
 
+            // number of underestimations
         	var neg_count = d3.sum(leaves, function(d) {
-        		return Math.sign(d['logerror'] >= 0)
+        		return Math.sign(d["logerror"] < 0)
         	});
 
-        	return {'count': count,
-        		'overestimated' : pos_count,
-        		'underestimated' : neg_count
+        	return {"overestimated" : pos_count,
+        		"underestimated" : neg_count
         	};
         };
 
         function bar_chart(data) {
-        	    
+
+            // Size and margin variables   	    
         	var margin = {top: 60, right: 20, bottom: 30, left: 40},
         		width = 800 - margin.left - margin.right,
         		height = 600 - margin.top - margin.bottom;
 
-
+            // group the data and pass it to agg_month function
         	var nested = d3.nest()
         		.key(function(d) {
-        			return d['date'].getUTCMonth();
+        			return d["date"].getUTCMonth()+1;
         		})
         		.rollup(agg_month)
 				.entries(data);
 			
+            // add the graph canvas to the body of the webpage
         	var svg_bar = d3.select("body")
         	  	.append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-        	  	.attr('class', 'stack');
+        	  	.attr("class", "stack");
 
-			var x_data = ['overestimated', 'underestimated'];
-			//debugger;
-			//var x_data = Object.keys(nested.values);
+            // Our two categories and the corresponding colors
+			var x_data = ["overestimated", "underestimated"];
+           	var color = ["blue", "red"];
 
+            // setup x
 			var x = d3.scale.ordinal()
             	.rangeRoundBands([0, width], .35);
 
+            // setup y
     		var y = d3.scale.linear()
             	.rangeRound([height, 0]);
 
-
-            var color = ['red', 'blue'];
-
+            // x-axis
             var x_axis = d3.svg.axis()
             	.scale(x)
             	.orient("bottom");
 
+            // y_axis
             var	y_axis = d3.svg.axis()
             	.scale(y)
 				.orient("left");
 
-    		var dataIntermediate = x_data.map(function (c) {
+            // prepare the data for stacked bar
+    		var data_intermediate = x_data.map(function (c) {
         		return nested.map(function (d) {
-            		return {x: d['key'], y: d.values[c]};
+            		return {x: d["key"], y: d.values[c]};
         		});
     		});
 
-    		var dataStackLayout = d3.layout.stack()(dataIntermediate);
 
-    		x.domain(dataStackLayout[0].map(function (d) {
+    		var data_stack_layout = d3.layout.stack()(data_intermediate);
+
+            // x, y domain
+    		x.domain(data_stack_layout[0].map(function (d) {
         		return d.x;
     		}));
 
     		y.domain([0,
-        		d3.max(dataStackLayout[dataStackLayout.length - 1],
+        		d3.max(data_stack_layout[data_stack_layout.length - 1],
                 	function (d) { return d.y0 + d.y;})
         			]).nice();
 
+            // add stacked layers
       		var layer = svg_bar.selectAll(".stack")
-            	.data(dataStackLayout)
+            	.data(data_stack_layout)
             	.enter().append("g")
             	.attr("class", "stack")
-            	.style("fill", function (d, i) {
-                	return color[i];
+            	.style("fill", function(d, i) {
+            		return color[i];
             	});
 
+            // draw the bars
             layer.selectAll("rect")
             	.data(function (d) {
                 	return d;
             	 })
-            .enter().append("rect")
-            .attr("x", function (d) {
-            	return x(d.x);
-            })
-            .attr("y", function (d) {
-            	return y(d.y + d.y0);
-            })
-            .attr("height", function (d) {
-            	return y(d.y0) - y(d.y + d.y0);
-            })
-            .attr("width", x.rangeBand());
+                .enter().append("rect")
+                .attr("x", function (d) {
+            	   return x(d.x);
+                })
+                .attr("y", function (d) {
+            	   return y(d.y + d.y0);
+                })
+                .attr("height", function (d) {
+            	   return y(d.y0) - y(d.y + d.y0);
+                })
+                .attr("width", x.rangeBand());
 
+            // add x-axis
             svg_bar.append("g")
             	.attr("class", "axis")
             	.attr("transform", "translate(0," + height + ")")
             	.call(x_axis);
 
+            // add y-axis
             svg_bar.append("g")
       			.attr("class", "axis")
       			.call(y_axis);
+
         }
 
         function update(month) {
+            
             // Filter data based on month value
             var filtered = data.filter(function (d) {
                 return d['date'].getUTCMonth() === month;
@@ -336,7 +351,7 @@
             plot_all(data);
 
             // Add title
-            d3.select('h2')
+            d3.select("h2")
             	.text("Outlier Distribution in Total");
 
 
@@ -410,7 +425,7 @@
 
             bar_chart(data);
       }
-    }, 100)
+    }, 1000)
 
   };
 </script>
@@ -419,7 +434,7 @@
 	<script type="text/javascript">
     	var format = d3.time.format("%Y-%m-%d");
       	// load data
-      	d3.csv("sample_zillow.csv", function(d) {
+      	d3.csv("zillow.csv", function(d) {
         	// Convert values to numerical values
         	d['latitude'] = +d['latitude']/1e6;
         	d['longitude'] = +d['longitude']/1e6;
