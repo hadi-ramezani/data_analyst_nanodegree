@@ -23,6 +23,7 @@ Design:
 - The animation initially stopped at month 12 after looping over all months. The reader could not see all the data at once after the author-driven section. An "All Data" button was added to visualize all data.
 - The color of the buttons were changed to green.  
 - The title updates correctly when all data are shown.
+- I added a stacked bar chart to show the trend in the number of outliers and the ratio of the number of underestimated and overestimated outliers.
 
 
 Feedback: 
@@ -33,8 +34,9 @@ Feedback:
 5) Make the circles a bit bigger. Data with logerror values close to the cutoff are almost invisible. 
 6) Draw the data on an actual map (this is explained in the design section)
 7) Show other information upon mouse-over (out of the scope for this project but will consider later)
+8) Add a stacked bar chart or a line chart to show how the number of outliers change each months.
 
-Resources: w3schools and stackoverflow websites, d3.js documentation, and this tutorial: http://bl.ocks.org/weiglemc/6185069
+Resources: w3schools and stackoverflow websites, d3.js documentation, and these examples: http://bl.ocks.org/weiglemc/6185069 and http://www.adeveloperdiary.com/d3-js/create-stacked-bar-chart-using-d3-js/
 
 
 
