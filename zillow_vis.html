@@ -116,14 +116,12 @@
         // Filter data based on the outlier cutoff
         data = data.filter(function(d) {return Math.abs(d["logerror"]) > outlier_cutoff })
 
-
         var logerror_value = function(d) { return d["logerror"];};
         
         // Map the area of the circles to logerror
         var radius = d3.scale.sqrt()
         	.domain([outlier_cutoff, max_logerror])
             .range([2, 10]);
-
 
         // add the graph canvas to the body of the webpage
         var svg = d3.select("body").append("svg")
@@ -264,7 +262,6 @@
         		});
     		});
 
-
     		var data_stack_layout = d3.layout.stack()(data_intermediate);
 
             // x, y domain
@@ -313,7 +310,6 @@
             svg_bar.append("g")
       			.attr("class", "axis")
       			.call(y_axis);
-
         }
 
         function update(month) {
@@ -353,7 +349,6 @@
             // Add title
             d3.select("h2")
             	.text("Outlier Distribution in Total");
-
 
             // Define buttons (month and all data)
             var buttons = d3.select("body")
