@@ -24,6 +24,10 @@
         opacity: 0.8;
     }
 
+    .legend {
+        opacity: 0.8;
+    }
+
     .tooltip {
       position: absolute;
       width: 200px;
@@ -77,11 +81,41 @@
         months.push(i);
     }
 
+    // A function to draw legends, needs the svg object and width to locate it
+    // properly
+    function draw_legend(svg, width){
+        var color = ["blue", "red"];
+        // draw legend
+        var legend = svg.selectAll(".legend")
+            .data(["Overestimated", "Underestimated"])
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        // draw legend colored rectangles
+        legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", function(d, i) { 
+                    return color[i]
+            });
+
+        // draw legend text
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".55em")
+            .style("text-anchor", "end")
+            .text(function(d) { return d;})
+        }
+
     function plot_points(data) {
         // Add title
         d3.select("body")
             .append("h2")
-            .text("Outlier Distribution in Month ");
+            .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Month ")
 
         // setup x 
         var x_value = function(d) { return d["longitude"];}, 
@@ -101,6 +135,7 @@
 
         // setup fill color: overestimation in blue, underestimation in red.
         var c_value = function(d) { return Math.sign(d);};
+
         var color = function(d) {
             if (c_value(d) === 1) {
                 return "blue";
@@ -162,6 +197,8 @@
             .style("text-anchor", "end")
             .text("Latitude");
 
+        draw_legend(svg, width);
+
         function plot_all(data) {
             var circles = svg.selectAll("circle")
                 .data(data);
@@ -186,7 +223,7 @@
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html(d["id_parcel"] + "<br/> (" + x_value(d)
+                    tooltip.html("id: "+ d["id_parcel"] + "<br/> (" + x_value(d)
                         + ", " + y_value(d) + ")" + "<br/> logerror: " + 
                         logerror_value(d))
                         .style("left", (d3.event.pageX + 15) + "px")
@@ -314,12 +351,28 @@
             svg_bar.append("g")
                 .attr("class", "axis")
                 .attr("transform", "translate(0," + height + ")")
-                .call(x_axis);
+                .call(x_axis)
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width/2)
+                .attr("y", 30)
+                .style("text-anchor", "end")
+                .text("Month");
 
             // add y-axis
             svg_bar.append("g")
                 .attr("class", "axis")
-                .call(y_axis);
+                .call(y_axis)
+                .append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Count");
+
+            draw_legend(svg_bar, width);
+
         }
 
         function update(month) {
@@ -331,7 +384,8 @@
 
             // Add title
             d3.select('h2')
-                .text("Outlier Distribution in Month " + (month + 1));
+                .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Month " + (month + 1));
 
             // Select add circles on the page
             var circles = svg.selectAll('circle')
@@ -358,7 +412,8 @@
 
             // Add title
             d3.select("h2")
-                .text("Outlier Distribution in Total");
+                .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Total");
 
             // Define buttons (month and all data)
             var buttons = d3.select("body")
@@ -423,14 +478,15 @@
 
                 // Add title
                 d3.select('h2')
-                    .text("Outlier Distribution in Total");
+                    .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Total");
 
                 plot_all(data);
             })
 
             bar_chart(data);
       }
-    }, 1000)
+    }, 100)
 
   };
 </script>
