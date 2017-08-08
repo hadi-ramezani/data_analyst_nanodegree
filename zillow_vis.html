@@ -7,6 +7,10 @@
         font: 11px sans-serif;
     }
 
+    .text {
+        font: 14px sans-serif;
+    }
+
     .axis path,
     .axis line {
         fill: none;
@@ -485,6 +489,18 @@
             })
 
             bar_chart(data);
+            d3.select("body")
+            .append("p")
+            .attr("class", "text")
+            .text("Zillow's Home Value Prediction competition is a two-round \
+                competition in which the ultimate goal is to improve the \
+                home-price prediction algorithm of the Zillow company \
+                (aka Zestimate). During the first round of the competition, \
+                the objective is to predict the Zestimate's residual error \
+                (logerror). Here, I show the geographical distribution and the \
+                number of outliers (abs(logerror) > 0.5) in the dataset. The \
+                data shows the number of outliers decreases as time goes by.");
+
       }
     }, 100)
 
@@ -495,14 +511,14 @@
     <script type="text/javascript">
         var format = d3.time.format("%Y-%m-%d");
         // load data
-        d3.csv("zillow.csv", function(d) {
+        d3.csv("sample_zillow.csv", function(d) {
             // Convert values to numerical values
             d['latitude'] = +d['latitude']/1e6;
             d['longitude'] = +d['longitude']/1e6;
             d['logerror'] = +d['logerror'];
             d['date'] = format.parse(d['date']);
             return d;
-      }, plot_points);
+        }, plot_points);
     </script>
 </body>
 </html>
