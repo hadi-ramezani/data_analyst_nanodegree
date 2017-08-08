@@ -13,8 +13,6 @@ Design:
 
 * I decided to make the layout of the plot somewhat unconventional (the height is larger that the width). I intentionally changed the shape of the plot to resemble the shape of the California state on the map.
 
-* A legend that shows the sign of the values was not included, because it would distract the reader from the main message of the visualization. Note that the sign of the logerror is just a side information here but quite valuable.
-
 * I decided to show the id_parcel, coordinates, and logerror upon mouse-over event. Other information can also be included here but it's beyond the scope of this project.
 
 ** Changes after receiving feedback: 
@@ -24,6 +22,8 @@ Design:
 - The color of the buttons were changed to green.  
 - The title updates correctly when all data are shown.
 - I added a stacked bar chart to show the trend in the number of outliers and the ratio of the number of underestimated and overestimated outliers.
+- Added legends and axes labels to the graphs.
+- Added a brief description of the data.
 
 
 Feedback: 
@@ -35,6 +35,8 @@ Feedback:
 6) Draw the data on an actual map (this is explained in the design section)
 7) Show other information upon mouse-over (out of the scope for this project but will consider later)
 8) Add a stacked bar chart or a line chart to show how the number of outliers change each months.
+9) Add legends and axes labels to the graphs.
+10) Add a brief description of the data.
 
 Resources: w3schools and stackoverflow websites, d3.js documentation, and these examples: http://bl.ocks.org/weiglemc/6185069 and http://www.adeveloperdiary.com/d3-js/create-stacked-bar-chart-using-d3-js/
 
