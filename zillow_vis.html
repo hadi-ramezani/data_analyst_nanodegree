@@ -511,7 +511,7 @@
     <script type="text/javascript">
         var format = d3.time.format("%Y-%m-%d");
         // load data
-        d3.csv("sample_zillow.csv", function(d) {
+        d3.csv("zillow.csv", function(d) {
             // Convert values to numerical values
             d['latitude'] = +d['latitude']/1e6;
             d['longitude'] = +d['longitude']/1e6;
