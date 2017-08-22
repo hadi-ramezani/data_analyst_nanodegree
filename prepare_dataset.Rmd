@@ -18,7 +18,7 @@ Let's read in the data first.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Load_the_Data}
 # Load the Data
-setwd("H:/udacity/data_analyst/p4_exploratory_data_analysis/ZillowPrize_EDA")
+setwd("H:/udacity/data_analyst/p4_exploratory_data_analysis/ZillowPrize")
 properties_2016 = read.csv("properties_2016.csv")
 train_2016 = read.csv("train_2016_v2.csv")
 ```
