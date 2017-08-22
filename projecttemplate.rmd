@@ -465,6 +465,28 @@ leaflet(zillow.coor_error) %>% addTiles() %>%
 ```
 
 
+```{r echo=FALSE, message=FALSE, warning=FALSE, map_plot_county}
+zillow.county = zillow %>% 
+  transform(longitude = longitude/1e6, latitude = latitude/1e6) %>%
+  select(id_parcel, region_county, longitude, latitude) %>% 
+  subset(!is.na(longitude) & !is.na(latitude)) %>%
+  sample_frac(0.1)
+
+min_lon = min(zillow.coor_error$longitude)
+max_lon = max(zillow.coor_error$longitude)
+min_lat = min(zillow.coor_error$latitude)
+max_lat = max(zillow.coor_error$latitude)
+
+color_bar = colorNumeric('RdYlBu', domain = zillow.county$region_county)
+leaflet(zillow.county) %>% addTiles() %>%
+  fitBounds(min_lon, min_lat, max_lon, max_lat) %>%
+  addCircleMarkers(color=~color_bar(region_county), fillOpacity = 1, 
+                   stroke = FALSE, radius = 3) %>%
+   addLegend("topleft", pal = color_bar, values = ~region_county, 
+             title = "county", opacity = 1)
+```
+
+
 
 The yellow color dominates here which indicates that the logerror is very small in general. However, we can easily spot several blue (overestimated prices) and red (under-estimated prices) on the map. If we zoom in by a factor of 5-6 we'll see quite an interesting behavior. The properties with large values of logerror are commonly more isolated. There are two potential theories on how the predictions are poor for those properties: 1) These properties are unique. For example, they are located in a special location (good or bad) which can potentially attract or repel buyers. The Zestimate prediction probably doesn't take those factors into considerations 2) Zestimate takes advantage of the sale prices for other 
 properties in close proximity of a property of interest. Accordingly, Zestimate fails to make an accurate prediction when there isn't enough nearby data.   
@@ -483,7 +505,7 @@ max_lon = max(zillow.wo_outlier.coor_error$longitude)
 min_lat = min(zillow.wo_outlier.coor_error$latitude)
 max_lat = max(zillow.wo_outlier.coor_error$latitude)
 
-color_bar = colorNumeric('RdYlBu', domain = zillow.wo_outlier.coor_error$)
+color_bar = colorNumeric('RdYlBu', domain = zillow.wo_outlier.coor_error$logerror)
 leaflet(zillow.wo_outlier.coor_error) %>% addTiles() %>%
   fitBounds(min_lon, min_lat, max_lon, max_lat) %>%
   addCircleMarkers(color=~color_bar(logerror), fillOpacity = 1, 
