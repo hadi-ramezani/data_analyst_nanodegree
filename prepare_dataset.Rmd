@@ -1,0 +1,117 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+library(dplyr)
+```
+
+Here, we are provided with information on ~3M properties of three California \
+counties including Los Angles, Orange, and Ventura (properties_2016.csv). \
+Among these ~3M properties, we have the residual error information of ~90K \
+properties (train_2016_v2.csv). Therefore, our focus for this EDA would be on \
+those properties.   
+
+Let's read in the data first.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Load_the_Data}
+# Load the Data
+setwd("H:/udacity/data_analyst/p4_exploratory_data_analysis/ZillowPrize")
+properties_2016 = read.csv("properties_2016.csv")
+train_2016 = read.csv("train_2016_v2.csv")
+```
+
+## Renaming the features
+Philipp Spachtholz from kaggle \
+("https://www.kaggle.com/philippsp/exploratory-analysis-zillow/notebook") \
+has proposed a much better naming for the features. I will use his names \
+(with some updates of mine) to make the feature names self-explanatory. I'll \
+then write the data into new csv files (renamed_xxx.csv) for future use.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Rename}
+properties_2016 = properties_2016 %>% rename(
+  id_parcel = parcelid,
+  build_year = yearbuilt,
+  area_basement = basementsqft,
+  area_patio = yardbuildingsqft17,
+  area_shed = yardbuildingsqft26,
+  area_pool = poolsizesum,
+  area_lot = lotsizesquarefeet,
+  area_garage = garagetotalsqft,
+  area_firstfloor_finished = finishedfloor1squarefeet,
+  area_total_calc = calculatedfinishedsquarefeet,
+  area_base = finishedsquarefeet6,
+  area_live_finished = finishedsquarefeet12,
+  area_liveperi_finished = finishedsquarefeet13,
+  area_total_finished = finishedsquarefeet15,
+  area_unknown = finishedsquarefeet50,
+  num_unit = unitcnt,
+  num_story = numberofstories,
+  num_room = roomcnt,
+  num_bathroom = bathroomcnt,
+  num_bedroom = bedroomcnt,
+  num_bathroom_calc = calculatedbathnbr,
+  num_bath = fullbathcnt,
+  num_75_bath = threequarterbathnbr,
+  num_fireplace = fireplacecnt,
+  num_pool = poolcnt,
+  num_garage = garagecarcnt,
+  region_county = regionidcounty,
+  region_city = regionidcity,
+  region_zip = regionidzip,
+  region_neighbor = regionidneighborhood,
+  tax_total = taxvaluedollarcnt,
+  tax_building = structuretaxvaluedollarcnt,
+  tax_land = landtaxvaluedollarcnt,
+  tax_property = taxamount,
+  tax_year = assessmentyear,
+  tax_delinquency = taxdelinquencyflag,
+  tax_delinquency_year = taxdelinquencyyear,
+  zoning_property = propertyzoningdesc,
+  type_zoning_landuse = propertylandusetypeid,
+  zoning_landuse_county = propertycountylandusecode,
+  flag_fireplace = fireplaceflag,
+  flag_tub = hashottuborspa,
+  type_quality = buildingqualitytypeid,
+  type_framing = buildingclasstypeid,
+  type_material = typeconstructiontypeid,
+  type_deck = decktypeid,
+  type_story = storytypeid,
+  type_heating = heatingorsystemtypeid,
+  type_aircon = airconditioningtypeid,
+  type_architectural= architecturalstyletypeid
+)
+rename(train_2016)
+train_2016 = train_2016 %>% rename(
+  id_parcel = parcelid,
+  date = transactiondate
+)
+properties_2016 = properties_2016 %>%
+  mutate(tax_delinquency = ifelse(tax_delinquency=="Y",1,0),
+         flag_fireplace = ifelse(flag_fireplace=="Y",1,0),
+         flag_tub = ifelse(flag_tub=="Y",1,0))
+```
+
+The data set "properties_2016" consists of 58 variables and 2,985,217 \
+observations. The data set "train_2016_v2.csv" contains 3 variables and 90275 \
+observations. 
+
+Let's merge these two data sets, and create a single data set that contains \
+both the property information and the transactions information. This now will \
+be the main data set that we'll be working with.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, merge_datasets}
+zillow = merge(train_2016, properties_2016, by = "id_parcel")
+str(zillow)
+head(zillow)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, write_newfiles}
+#Now, let's write the data into new files.
+write.csv(properties_2016, "renamed_properties_2016.csv")
+write.csv(train_2016, "renamed_train_2016.csv")
+write.csv(zillow, "zillow.csv")
+```
