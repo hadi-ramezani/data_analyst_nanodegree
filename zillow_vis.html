@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<style>
+    body {
+        font: 11px sans-serif;
+    }
+
+    .text {
+        font: 14px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    } 
+
+    .circle {
+        stroke: #000;
+        stroke-width: 0.7;
+        opacity: 0.7;
+    }
+
+    .stack {
+        opacity: 0.8;
+    }
+
+    .legend {
+        opacity: 0.8;
+    }
+
+    .tooltip {
+      position: absolute;
+      width: 200px;
+      height: 28px;
+      pointer-events: none;
+    }
+
+    h2 {
+        text-align: left;
+        color: black;
+    }
+
+    div.months_buttons {
+        position: fixed;
+        top: 30px;
+        left: 100px;
+        width: 500px;
+    }
+
+    div.months_buttons div {
+        background-color: #4CAF50;
+        color: white;
+        padding: 3px;
+        margin: 7px;
+        float: left;
+        font-size: 1.5em;
+    }
+
+    div.total_button {
+        position: fixed;
+        background-color: #4CAF50;
+        color: white;
+        top: 70px;
+        left: 250px;
+        font-size: 1.5em;
+    }
+
+</style>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+<script type="text/javascript">
+    var margin = {top: 60, right: 20, bottom: 30, left: 40},
+        width = 500 - margin.left - margin.right,
+        height = 930 - margin.top - margin.bottom,
+        outlier_cutoff = 0.5;
+
+    // An array to hold month numbers
+    var months = [];
+    for (var i=1; i <=12; i++){
+        months.push(i);
+    }
+
+    // A function to draw legends, needs the svg object and width to locate it
+    // properly
+    function draw_legend(svg, width){
+        var color = ["blue", "red"];
+        // draw legend
+        var legend = svg.selectAll(".legend")
+            .data(["Overestimated", "Underestimated"])
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        // draw legend colored rectangles
+        legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", function(d, i) { 
+                    return color[i]
+            });
+
+        // draw legend text
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".55em")
+            .style("text-anchor", "end")
+            .text(function(d) { return d;})
+        }
+
+    function plot_points(data) {
+        // Add title
+        d3.select("body")
+            .append("h2")
+            .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Month ")
+
+        // setup x 
+        var x_value = function(d) { return d["longitude"];}, 
+        x_scale = d3.scale.linear()
+            .range([0, width])
+            .domain([d3.min(data, x_value), d3.max(data, x_value)]), 
+        x_map = function(d) { return x_scale(x_value(d));},
+        x_axis = d3.svg.axis().scale(x_scale).orient("bottom");
+
+        // setup y
+        var y_value = function(d) { return d["latitude"];}, 
+        y_scale = d3.scale.linear()
+            .range([height, 0])
+            .domain([d3.min(data, y_value), d3.max(data, y_value)]),
+        y_map = function(d) { return y_scale(y_value(d));},
+        y_axis = d3.svg.axis().scale(y_scale).orient("left");
+
+        // setup fill color: overestimation in blue, underestimation in red.
+        var c_value = function(d) { return Math.sign(d);};
+
+        var color = function(d) {
+            if (c_value(d) === 1) {
+                return "blue";
+            } 
+            return "red";
+        };
+
+        // Get the max error
+        var max_logerror = d3.max(data, function(d) {
+            return Math.abs(d["logerror"]);
+        });
+
+        // Filter data based on the outlier cutoff
+        data = data.filter(function(d) {
+            return Math.abs(d["logerror"]) > outlier_cutoff 
+        })
+
+        var logerror_value = function(d) { return d["logerror"];};
+        
+        // Map the area of the circles to logerror
+        var radius = d3.scale.sqrt()
+            .domain([outlier_cutoff, max_logerror])
+            .range([2, 10]);
+
+        // add the graph canvas to the body of the webpage
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + 
+                margin.top + ")");
+
+        // add the tooltip area to the webpage
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        // x-axis
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(x_axis)
+            .append("text")
+            .attr("class", "label")
+            .attr("x", width)
+            .attr("y", -6)
+            .style("text-anchor", "end")
+            .text("Longitude");
+
+        // y-axis
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(y_axis)
+            .append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Latitude");
+
+        draw_legend(svg, width);
+
+        function plot_all(data) {
+            var circles = svg.selectAll("circle")
+                .data(data);
+
+            circles.remove();
+
+            // draw dots
+            svg.append("g")
+                .selectAll("circle")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "circle")
+                .attr("r", function(d) { 
+                    return radius(Math.abs(d["logerror"]));
+                })
+                .attr("cx", x_map)
+                .attr("cy", y_map)
+                .style("fill", function(d) { 
+                    return color(c_value(d["logerror"]));
+                }) 
+                .on("mouseover", function(d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html("id: "+ d["id_parcel"] + "<br/> (" + x_value(d)
+                        + ", " + y_value(d) + ")" + "<br/> logerror: " + 
+                        logerror_value(d))
+                        .style("left", (d3.event.pageX + 15) + "px")
+                        .style("top", (d3.event.pageY - 30) + "px");
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                })
+        }
+
+        // A function to aggregate the data (number of over/underestimations
+        // for each month)
+        function agg_month(leaves){
+
+            // number of overestimations
+            var pos_count = d3.sum(leaves, function(d) {
+                return Math.sign(d["logerror"] >= 0) 
+            });
+
+            // number of underestimations
+            var neg_count = d3.sum(leaves, function(d) {
+                return Math.sign(d["logerror"] < 0)
+            });
+
+            return {"overestimated" : pos_count,
+                "underestimated" : neg_count
+            };
+        };
+
+        function bar_chart(data) {
+
+            // Size and margin variables        
+            var margin = {top: 60, right: 20, bottom: 30, left: 40},
+                width = 800 - margin.left - margin.right,
+                height = 600 - margin.top - margin.bottom;
+
+            // group the data and pass it to agg_month function
+            var nested = d3.nest()
+                .key(function(d) {
+                    return d["date"].getUTCMonth()+1;
+                })
+                .rollup(agg_month)
+                .entries(data);
+            
+            // add the graph canvas to the body of the webpage
+            var svg_bar = d3.select("body")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + 
+                    margin.top + ")")
+                .attr("class", "stack");
+
+            // Our two categories and the corresponding colors
+            var x_data = ["overestimated", "underestimated"];
+            var color = ["blue", "red"];
+
+            // setup x
+            var x = d3.scale.ordinal()
+                .rangeRoundBands([0, width], .35);
+
+            // setup y
+            var y = d3.scale.linear()
+                .rangeRound([height, 0]);
+
+            // x-axis
+            var x_axis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+
+            // y_axis
+            var y_axis = d3.svg.axis()
+                .scale(y)
+                .orient("left");
+
+            // prepare the data for stacked bar
+            var data_intermediate = x_data.map(function (c) {
+                return nested.map(function (d) {
+                    return {x: d["key"], y: d.values[c]};
+                });
+            });
+
+            var data_stack_layout = d3.layout.stack()(data_intermediate);
+
+            // x, y domain
+            x.domain(data_stack_layout[0].map(function (d) {
+                return d.x;
+            }));
+
+            y.domain([0,
+                d3.max(data_stack_layout[data_stack_layout.length - 1],
+                    function (d) { return d.y0 + d.y;})
+                    ]).nice();
+
+            // add stacked layers
+            var layer = svg_bar.selectAll(".stack")
+                .data(data_stack_layout)
+                .enter().append("g")
+                .attr("class", "stack")
+                .style("fill", function(d, i) {
+                    return color[i];
+                });
+
+            // draw the bars
+            layer.selectAll("rect")
+                .data(function (d) {
+                    return d;
+                 })
+                .enter().append("rect")
+                .attr("x", function (d) {
+                   return x(d.x);
+                })
+                .attr("y", function (d) {
+                   return y(d.y + d.y0);
+                })
+                .attr("height", function (d) {
+                   return y(d.y0) - y(d.y + d.y0);
+                })
+                .attr("width", x.rangeBand());
+
+            // add x-axis
+            svg_bar.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(x_axis)
+                .append("text")
+                .attr("class", "label")
+                .attr("x", width/2)
+                .attr("y", 30)
+                .style("text-anchor", "end")
+                .text("Month");
+
+            // add y-axis
+            svg_bar.append("g")
+                .attr("class", "axis")
+                .call(y_axis)
+                .append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Count");
+
+            draw_legend(svg_bar, width);
+
+        }
+
+        function update(month) {
+            
+            // Filter data based on month value
+            var filtered = data.filter(function (d) {
+                return d['date'].getUTCMonth() === month;
+            });
+
+            // Add title
+            d3.select('h2')
+                .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Month " + (month + 1));
+
+            // Select add circles on the page
+            var circles = svg.selectAll('circle')
+                .data(data);
+
+            // Remove all circles first in order to plot the new ones
+            circles.remove();
+
+            // Plot the filtered data
+            plot_all(filtered);
+        }
+
+    var month = 0;
+
+    // Loop over all month for an author-driven visualization.
+    var month_interval = setInterval(function() {
+        update(month);
+        month++;
+
+        if(month > 12) {
+            clearInterval(month_interval);
+
+            plot_all(data);
+
+            // Add title
+            d3.select("h2")
+                .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Total");
+
+            // Define buttons (month and all data)
+            var buttons = d3.select("body")
+                .append("div")
+                .attr("class", "months_buttons")
+                .selectAll("div")
+                .data(months)
+                .enter()
+                .append("div")
+                .text(function(d) {
+                    return d;
+                });
+
+            var total_button = d3.select("body")
+                .append("div")
+                .attr("class", "total_button")
+                .text("All Data");
+
+            buttons.on("click", function(d) {
+
+                // Revert the style of other buttons
+                d3.select(".months_buttons")
+                    .selectAll("div")
+                    .transition()
+                    .duration(500)
+                    .style("color", "white")
+                    .style("background", "#4CAF50");
+
+                // Revert the style of total_button on month click
+                d3.select(".total_button")
+                    .transition()
+                    .duration(500)
+                    .style("color", "white")
+                    .style("background", "#4CAF50");
+
+                // Change the style of the clicked button
+                d3.select(this)
+                    .transition()
+                    .duration(500)
+                    .style("background", "orange")
+                    .style("color", "black");
+
+                update(d-1);
+            })
+
+            total_button.on("click", function(d){
+
+                // Revert the style of 
+                d3.select(".months_buttons")
+                    .selectAll("div")
+                    .transition()
+                    .duration(500)
+                    .style("color", "white")
+                    .style("background", "#4CAF50");
+
+                // Change the style of the clicked button
+                d3.select(this)
+                    .transition()
+                    .duration(500)
+                    .style("background", "orange")
+                    .style("color", "black");
+
+                // Add title
+                d3.select('h2')
+                    .text("Geographical Distribution of Outliers for Zillow Prize\
+                 Competition Dataset in Total");
+
+                plot_all(data);
+            })
+
+            bar_chart(data);
+            d3.select("body")
+            .append("p")
+            .attr("class", "text")
+            .text("Zillow's Home Value Prediction competition is a two-round \
+                competition in which the ultimate goal is to improve the \
+                home-price prediction algorithm of the Zillow company \
+                (aka Zestimate). During the first round of the competition, \
+                the objective is to predict the Zestimate's residual error \
+                (logerror). Here, I show the geographical distribution and the \
+                number of outliers (abs(logerror) > 0.5) in the dataset. The \
+                data shows the number of outliers decreases as time goes by.");
+
+      }
+    }, 1000)
+
+  };
+</script>
+
+<body>
+    <script type="text/javascript">
+        var format = d3.time.format("%Y-%m-%d");
+        // load data
+        d3.csv("zillow.csv", function(d) {
+            // Convert values to numerical values
+            d['latitude'] = +d['latitude']/1e6;
+            d['longitude'] = +d['longitude']/1e6;
+            d['logerror'] = +d['logerror'];
+            d['date'] = format.parse(d['date']);
+            return d;
+        }, plot_points);
+    </script>
+</body>
+</html>
