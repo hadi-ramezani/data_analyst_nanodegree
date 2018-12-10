@@ -1,0 +1,5 @@
+Udacity forum on creating the sqlite databases:
+https://discussions.udacity.com/t/creating-db-file-from-csv-files-with-non-ascii-unicode-characters/174958/6
+
+w3schools on seraching pattern in a column:
+https://www.w3schools.com/sql/sql_like.asp
